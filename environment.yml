@@ -1,0 +1,18 @@
+name: libpoisson
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python
+  - cupy
+  - cmake >=3.24
+  - cuda-version 12.*
+  - gxx >9
+  - cuda-libraries-dev
+  - cuda-nvcc 
+  - make
+  - blas-devel
+  - libblas
+  - liblapacke
+  - numpy
+  - pip

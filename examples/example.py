@@ -10,8 +10,7 @@ gaussian_width = 0.1
 
 s = lp.PoissonSolver(lbox=lbox, permittivity=1.0, gaussian_width=gaussian_width)
 
-forces = cp.zeros_like(positions, dtype=cp.float32)
-s.compute_poisson(positions=positions, charges=charges, forces=forces)
+forces = s.compute_poisson(positions=positions, charges=charges)
 
 print(f"Forces computed for {number_particles} particles in a box of size {lbox}:")
 print(forces)

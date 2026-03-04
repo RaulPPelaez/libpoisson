@@ -9,10 +9,11 @@ dependencies:
   - cuda-version 12.*
   - gxx >9
   - cuda-libraries-dev
-  - cuda-nvcc 
+  - cuda-nvcc
   - make
   - blas-devel
   - libblas
   - liblapacke
   - numpy
   - pip
+  - pytest

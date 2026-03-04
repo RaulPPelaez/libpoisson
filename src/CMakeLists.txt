@@ -22,4 +22,4 @@ uammd_setup_target(${NAME})
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-add_subdirectory(libpoisson)
+add_subdirectory(libPoisson)

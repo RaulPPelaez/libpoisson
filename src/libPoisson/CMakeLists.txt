@@ -12,7 +12,7 @@ if (NOT nanobind_FOUND)
   )
   FetchContent_MakeAvailable(nanobind)
 endif()
-set(NAME libpoisson)
+set(NAME libPoisson)
 nanobind_add_module(
   _${NAME}
   STABLE_ABI

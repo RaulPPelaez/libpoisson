@@ -1,4 +1,4 @@
-from ._libpoisson import PoissonSolver as _PoissonSolver
+from ._libPoisson import PoissonSolver as _PoissonSolver
 import cupy as cp
 
 

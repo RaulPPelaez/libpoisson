@@ -25,7 +25,7 @@ public:
 };
 
 using namespace nb::literals;
-NB_MODULE(_libpoisson, m) {
+NB_MODULE(_libPoisson, m) {
   m.doc() = "";
   auto solver = nb::class_<PyPoisson>(m, "PoissonSolver");
   solver.def(nb::init<real, real, real>(), "lbox"_a, "permittivity"_a,

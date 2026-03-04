@@ -70,10 +70,10 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    name="libpoisson",
+    name="libPoisson",
     version=version,
     packages=find_packages(),
-    ext_modules=[CMakeExtension("libpoisson")],
+    ext_modules=[CMakeExtension("libPoisson")],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )

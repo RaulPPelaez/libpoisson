@@ -53,10 +53,12 @@ class CMakeBuild(build_ext):
             "-DCMAKE_BUILD_TYPE=" + ("Debug" if self.debug else "Release"),
             f"-DDOUBLEPRECISION={double_precision}",
         ]
+        cuda_arch = os.environ.get("CMAKE_CUDA_ARCHITECTURES", "")
+        if cuda_arch:
+            cmake_args.append(f"-DCMAKE_CUDA_ARCHITECTURES={cuda_arch}")
 
-        num_jobs = os.cpu_count()
-        build_args = ["--config", "Release", f"-j{num_jobs}"]
-
+        num_jobs = int(os.environ.get("BUILD_JOBS", os.cpu_count()))
+        build_args = ["--config", "Release", "--parakkek", str(num_jobs)]
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
 
@@ -76,4 +78,4 @@ setup(
     ext_modules=[CMakeExtension("libPoisson")],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-)
+    )

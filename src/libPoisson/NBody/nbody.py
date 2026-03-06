@@ -9,7 +9,7 @@ class NBody(Solver):
     Uses the free charge green's function to compute the potential and field at target positions due to source charges.
     Assumes that the charges are gaussian distributed with a given width (chargeRadius) to avoid singularities at zero distance.
     """
-    def solve(self,
+    def _solve_open_open_open(self,
               source_pos: cp.ndarray,
               target_pos: cp.ndarray,
               charges: cp.ndarray,

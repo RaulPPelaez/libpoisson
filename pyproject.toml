@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "libPoisson"
+version = "0.1.0"
+description = "Modular simulation library"
+authors = [
+    { name = "Pablo Diez Silva", email = "pablodiezsilva@gmail.com" }
+]
+dependencies = [
+    "numpy",
+    "cupy"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

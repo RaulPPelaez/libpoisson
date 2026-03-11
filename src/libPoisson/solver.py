@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from numpy.typing import ArrayLike
 
 
-PERIODICITY_OPTIONS = ['periodic', 'open', 'single_wall', 'two_walls']
+PERIODICITY_OPTIONS = ['periodic', 'open', 'single_wall', 'two_walls','unspecify']
 
 class Solver(ABC):
     '''

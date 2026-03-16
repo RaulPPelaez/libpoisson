@@ -33,8 +33,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "sphinx_autodoc_typehints",
-    "myst_parser",
+    "sphinx_autodoc_typehints"
 ]
 
 html_theme = "sphinx_rtd_theme"

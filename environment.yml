@@ -1,10 +1,28 @@
 name: libpoisson
 channels:
   - conda-forge
+  - stochasticHydroTools
+  - nodefaults
 dependencies:
   - python
   - cupy
+  - numba
   - numpy
   - pip
   - pytest
   - scipy
+  - cuda-libraries-dev
+  - cuda-nvcc
+  - cuda-version<=12.3
+  - mkl-devel
+  - cmake
+  - make
+  - gxx
+  - pip:
+    - sphinx==7.2.6
+    - sphinx-rtd-theme==1.3.0
+    - sphinxcontrib-autoprogram==0.1.8
+    - sphinx-autodoc-typehints==1.23.1
+    - sphinxcontrib-napoleon==0.7
+    - gitpython
+    - git+https://github.com/RaulPPelaez/spreadinterp

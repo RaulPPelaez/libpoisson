@@ -1,6 +1,7 @@
 # Poisson Solver virtual class, every solver should inherit from this class and implement the solve function
 from abc import ABC, abstractmethod
 from numpy.typing import ArrayLike
+from math import sqrt
 
 
 PERIODICITY_OPTIONS = ['periodic', 'open', 'single_wall', 'two_walls','unspecify']
@@ -52,6 +53,7 @@ class Solver(ABC):
                  ):
         self.permittivity = permittivity
         self.charge_radius = charge_radius
+        self.gaussian_width = self.charge_radius * sqrt(2/3)  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).
         if periodicityX not in PERIODICITY_OPTIONS or periodicityY not in PERIODICITY_OPTIONS or periodicityZ not in PERIODICITY_OPTIONS:
             raise ValueError("Invalid periodicity option. Must be one of: {}".format(PERIODICITY_OPTIONS))
         self.periodicityX = periodicityX

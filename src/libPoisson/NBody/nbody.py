@@ -36,7 +36,7 @@ class NBody(Solver):
                 charges: ArrayLike,
                 compute_potential: bool = True,
                 compute_field: bool = True) -> tuple[ArrayLike, ArrayLike]:
-        '''
+        r'''
         Compute the potential and field at target positions due to source charges using the free charge green's function.
         The potential and field are computed using the following formulas:
 
@@ -46,7 +46,7 @@ class NBody(Solver):
         '''
         eps = self.permittivity
         eps4pi = 4 * pi * eps
-        a = self.charge_radius * sqrt(2/3)  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).
+        a = self.gaussian_width  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).
         self.pot = target_pos[::3] * 0 # conserve target_pos dtype but reduce to 1D array of length M (number of target positions)
         self.field = target_pos * 0
         threads_per_block = 256 # Number of threads per block (can be tuned for performance)
@@ -94,7 +94,7 @@ class NBody(Solver):
               charges: ArrayLike,
               compute_potential: bool = True,
               compute_field: bool = True) -> tuple[ArrayLike, ArrayLike]:
-        '''
+        r'''
         Compute the potential and field at target positions due to source charges using the free charge green's function with a single wall boundary condition.
         The potential and field are computed using the method of images, where an image charge is placed at the mirrored position of the source charge with respect to the wall,
         and its magnitude is scaled by the reflection coefficient determined by the permittivity of the wall and the medium.

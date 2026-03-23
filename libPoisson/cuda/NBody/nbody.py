@@ -1,4 +1,4 @@
-from ..solver import Solver
+from ...solver import Solver
 #import cupy as cp
 #from scipy.special import erf
 import numpy as np

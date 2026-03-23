@@ -1,12 +1,11 @@
-from ..solver import Solver
+from ...solver import Solver
 import cupy as cp
 import numpy as np
 from numpy.typing import ArrayLike
 import spreadinterp
 from math import pi
-from ..PMSimple import PMSimple
 
-class PMEwald(Solver):
+class PMSimple(Solver):
     """
     A simple Particle-Mesh solver that uses Gaussian spreading to compute the potential and field at target positions due to source charges.
     This solver assumes periodic boundary conditions in all three dimensions. The source charges are spread onto a grid using a Gaussian kernel,
@@ -19,14 +18,11 @@ class PMEwald(Solver):
         The size of the simulation box in each dimension (Lx, Ly, Lz).
     n_grid : ArrayLike
         The number of grid points in each dimension (nx, ny, nz) for the Particle-Mesh method.
-    split_factor : float
-        The splitting factor of the ewald sumation, which determines the gaussian width of the sum.
     """
     def __init__(self,
                  gaussian_cutoff: float,
                  L : ArrayLike,
                  n_grid: ArrayLike,
-                 split_factor: float,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.n_grid = n_grid
@@ -47,8 +43,8 @@ class PMEwald(Solver):
         '''
         eps = self.permittivity
         eps4pi = 4 * pi * eps
-        self.pot = target_pos[::3] * 0 # conserve target_pos dtype but reduce to 1D array of length M (number of target positions)
-        self.field = target_pos * 0 # conserve target_pos dtype but reduce to 3D array of shape (M, 3)
+        self.pot = target_pos[::3] * 0
+        self.field = target_pos * 0
 
         source_pos = source_pos.reshape(-1, 3)
         target_pos = target_pos.reshape(-1, 3)
@@ -73,4 +69,4 @@ class PMEwald(Solver):
         self.pot = spreadinterp.interpolate(target_pos, potential_grid, self.L, kernel=self.kernel)
         self.field = spreadinterp.interpolate(target_pos, field_grid, self.L, kernel=self.kernel)
 
-        return self.pot, self.field
+        return self.pot, self.field.flatten()

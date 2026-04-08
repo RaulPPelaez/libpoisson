@@ -61,7 +61,8 @@ nanobind_add_module(
 
 target_include_directories(_uammd PRIVATE "${uammd_SOURCE_DIR}/src")
 target_include_directories(_uammd PRIVATE "${uammd_SOURCE_DIR}/src/third_party")
-target_link_libraries(_uammd PRIVATE CUDA::cudart CUDA::cufft CUDA::curand)
-install(TARGETS _uammd LIBRARY DESTINATION .)
+target_link_libraries(_uammd PRIVATE CUDA::cudart CUDA::cufft CUDA::curand BLAS::BLAS LAPACK::LAPACK lapacke)
+target_compile_options(_uammd PRIVATE --extended-lambda)
+install(TARGETS _uammd LIBRARY DESTINATION ./cuda/)
 # Esto es opcional pero ayuda a depurar:
 message(STATUS "Configurando modulo: _uammd")

@@ -1,5 +1,5 @@
 from ...solver import Solver
-from ..._uammd import uammd_pse
+from .._uammd import uammd_pse
 import cupy as cp
 import numpy as np
 from numpy.typing import ArrayLike
@@ -60,5 +60,5 @@ class uammdPSE(Solver):
         assert field.shape == total_pos.shape
         assert potential.shape == total_charges.shape
         assert total_pos.shape[1] == 3
-        self.uammd_solver.compute_poisson(positions=total_pos, charges=total_charges, forces=field, energy=potential)
+        self.uammd_solver.compute_poisson(positions=total_pos, charges=total_charges, fields=field, potentials=potential)
         return potential[len(charges):], field[len(charges):,:]

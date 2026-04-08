@@ -8,14 +8,14 @@ name = "libPoisson"
 dynamic = ["version"]  # La versión la leeremos de Git como hacías en el setup.py
 description = "Librería de Poisson con soporte CUDA y UAMMD"
 readme = "README.md"
-authors = [{ name = "Pablo", email = "tu@email.com" }]
+authors = [{ name = "Pablo", email = "pablodiezsilva@gmail.com" }]
 requires-python = ">=3.8"
 dependencies = [
     "numpy", # Añade aquí tus dependencias de ejecución
 ]
 
 [tool.scikit-build]
-# Esto sustituye a tu lógica de 'install_dir'. 
+# Esto sustituye a tu lógica de 'install_dir'.
 # Coloca el .so dentro de la carpeta del paquete libPoisson
 wheel.install-dir = "libPoisson"
 

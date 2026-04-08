@@ -43,8 +43,8 @@ if (NOT nanobind_FOUND)
 endif()
 FetchContent_Declare(
   uammd
-  GIT_REPOSITORY https://github.com/RaulPPelaez/uammd/
-  GIT_TAG        v2.8.6
+  GIT_REPOSITORY https://github.com/Padisi/UAMMD.git
+  GIT_TAG        ElectrostaticFieldPotential
   EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(uammd)

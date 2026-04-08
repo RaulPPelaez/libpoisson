@@ -100,7 +100,15 @@ class Solver(ABC):
         solver_name = f"_solve_{self.periodicityX}_{self.periodicityY}_{self.periodicityZ}"
         solver = getattr(self, solver_name, None)
         if solver:
-            return solver(source_pos, target_pos, charges, compute_potential, compute_field)
+            if self.need_complex and not isinstance(charges, complex):
+                print("Computing complex potential and field by separating real and imaginary parts of the charges.")
+                real_charges = charges.real
+                imag_charges = charges.imag
+                real_potential, real_field = solver(source_pos, target_pos, real_charges, compute_potential, compute_field)
+                imag_potential, imag_field = solver(source_pos, target_pos, imag_charges, compute_potential, compute_field)
+                return real_potential + 1j * imag_potential, real_field + 1j * imag_field
+            else:
+                return solver(source_pos, target_pos, charges, compute_potential, compute_field)
         raise NotImplementedError("The solver for periodicity (X={}, Y={}, Z={}) is not implemented.".format(self.periodicityX, self.periodicityY, self.periodicityZ))
 
     def __call__(self,

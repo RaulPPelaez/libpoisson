@@ -1,10 +1,11 @@
 from ...solver import Solver
-#import cupy as cp
+import cupy as cp
 #from scipy.special import erf
 import numpy as np
 from numba import cuda, float64
 from math import sqrt, erf, exp, pi
-from .utils.nbody_kernel import nbody_kernel
+from .utils.new_nbody_kernel import nbody_kernel
+from .utils.image_charges import generate_image_charges, two_walls_convergence_criterion
 from numpy.typing import ArrayLike
 
 class NBody(Solver):
@@ -16,19 +17,34 @@ class NBody(Solver):
 
     Parameters:
     -----------
-    z_wall: float, optional
-        Position of the wall for single wall boundary condition. Needed if periodcityZ is set to 'single_wall'.
-    wall_permittivity: float, optional
-        Permittivity of the wall for single wall boundary condition. Needed if periodcityZ is set to 'single_wall'.
+    floor_z: float, optional
+        Position of the floor wall for single wall or two walls boundary condition. Needed if periodcityZ is set to 'single_wall' or 'two_walls'.
+    floor_permittivity: float, optional
+        Permittivity of the floor wall for single wall or two walls boundary condition. Needed if periodcityZ is set to 'single_wall' or 'two_walls'.
+    ceil_z: float, optional
+        Position of the ceiling wall for two walls boundary condition. Needed if periodcityZ is set to 'two_walls'.
+    ceil_permittivity: float, optional
+        Permittivity of the ceiling wall for two walls boundary condition. Needed if periodcityZ is set to 'two_walls'.
+    two_walls_tolerance: float, optional
+        Tolerance for the convergence of the image charge method in the two walls boundary condition. Default is 1e-3.
     """
     def __init__(self,
-                 z_wall: float = None,
-                 wall_permittivity: float = None,
+                 floor_z: float = None,
+                 ceil_z: float = None,
+                 floor_permittivity: float = None,
+                 ceil_permittivity: float = None,
+                 two_walls_tolerance: float = 1e-3,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.wall_position = z_wall
-        self.wall_permittivity = wall_permittivity
-
+        if self.periodicityZ == 'single_wall' and (floor_z is None or floor_permittivity is None):
+            raise ValueError("For single wall boundary condition, floor_z and floor_permittivity must be provided.")
+        if self.periodicityZ == 'two_walls' and (floor_z is None or ceil_z is None or floor_permittivity is None or ceil_permittivity is None):
+            raise ValueError("For two walls boundary condition, floor_z, ceil_z, floor_permittivity and ceil_permittivity must be provided.")
+        self.floor_z = floor_z
+        self.floor_permittivity = floor_permittivity
+        self.ceil_z = ceil_z
+        self.ceil_permittivity = ceil_permittivity
+        self.two_walls_tolerance = two_walls_tolerance
 
     def _solve_open_open_open(self,
                 source_pos: ArrayLike,
@@ -44,49 +60,33 @@ class NBody(Solver):
         $ \mathbf{E}(\mathbf{r}) = \sum_{j=1}^N \frac{q_j}{4\pi\epsilon} \left( \frac{\text{erf}(r_{ij}/a)}{r_{ij}^3} - \frac{2}{\sqrt{\pi}} \frac{\exp(-(r_{ij}/a)^2)}{a r_{ij}^2} \right) \mathbf{r}_{ij} $
         where $ r_{ij} = |\mathbf{r} - \mathbf{r}_j| $ is the distance between the target position and the source charge, and $ a $ is the width of the Gaussian charge distribution (related to the charge radius).
         '''
+        assert len(source_pos.shape) == 2, "Source positions must be a 2D array of shape (N, 3)."
+        assert len(target_pos.shape) == 2, "Target positions must be a 2D array of shape (M, 3)."
+        assert source_pos.shape[0] == charges.shape[0], "Number of source positions must match number of charges."
+        assert source_pos.shape[1] == 3, "Source positions must be 3D."
+        assert target_pos.shape[1] == 3, "Target positions must be 3D."
+        print("Solving N-body problem with open-open-open boundary condition...")
         eps = self.permittivity
         eps4pi = 4 * pi * eps
         a = self.gaussian_width  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).
-        self.pot = target_pos[::3] * 0 # conserve target_pos dtype but reduce to 1D array of length M (number of target positions)
-        self.field = target_pos * 0
         threads_per_block = 256 # Number of threads per block (can be tuned for performance)
-        M = len(target_pos) // 3
+        M = len(target_pos[:,0])
         blocks_per_grid = (M + threads_per_block - 1) // threads_per_block # Number of blocks needed to cover all target positions
-        nbody_kernel[blocks_per_grid, threads_per_block](source_pos, target_pos, charges, a, eps4pi, self.pot, self.field)
+        shmem_size = int(threads_per_block * 4 * 8) # Shared memory size needed for the kernel (3 coordinates per thread, 8 bytes per double)
+        field_potential = cp.zeros((M, 4), dtype=cp.float64)
+        source_pos_charge = cp.zeros((len(source_pos[:,0]), 4), dtype=cp.float64)
+        source_pos_charge[:, :3] = source_pos.reshape(-1, 3).astype(cp.float64)
+        source_pos_charge[:, 3] = charges.astype(cp.float64)
+        target_pos = cp.asarray(target_pos, dtype=cp.float64).reshape(-1, 3)
+        nbody_kernel[blocks_per_grid, threads_per_block, 0, shmem_size](target_pos, source_pos_charge, field_potential, a)
+        field_potential /= eps4pi
 
         if not compute_potential:
             self.pot = None
         if not compute_field:
             self.field = None
 
-        return self.pot, self.field
-
-    #def _solve_open_open_open_old(self,
-    #          source_pos: cp.ndarray,
-    #          target_pos: cp.ndarray,
-    #          charges: cp.ndarray,
-    #          compute_potential: bool = True,
-    #          compute_field: bool = True) -> tuple[cp.ndarray, cp.ndarray]:
-
-    #    pot = None
-    #    field = None
-    #    eps = self.permittivity
-    #    pos_i = target_pos.reshape(-1, 1, 3)  # (M, 1, 3)
-    #    pos_j = source_pos.reshape(1, -1, 3) # (1, N, 3)
-    #    r_ij = pos_i - pos_j # (M, N, 3)
-    #    r = cp.linalg.norm(r_ij, axis=-1) # (M, N)
-    #    eps4pi = 4 * cp.pi * eps
-    #    a = self.charge_radius * cp.sqrt(2/3)  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).
-    #    r_sigma = r/a
-    #    if compute_potential:
-    #        G = 1 / (eps4pi * r) * erf(r_sigma)
-    #        G[r == 0] = 1 / (eps4pi * a) * 2 / cp.sqrt(cp.pi)  # Handle the singularity at r=0 by using the limit of G as r approaches 0 (the potential is finite at r=0 due to the Gaussian charge distribution)
-    #        pot = G @ charges
-    #    if compute_field:
-    #        gradG = (1/(eps4pi * r**3) * (erf(r_sigma) - 2/cp.sqrt(cp.pi) * r_sigma * cp.exp(-r_sigma*r_sigma)))[:,:,cp.newaxis] * r_ij
-    #        gradG[r == 0] = 0  # Handle the singularity at r=0 by setting the gradient to zero (the field is finite at r=0 due to the Gaussian charge distribution)
-    #        field = cp.sum(gradG * charges[:, cp.newaxis], axis=1)  # (M, 3)
-    #    return pot, field.flatten()
+        return field_potential[:, 3], field_potential[:, :3]
 
     def _solve_open_open_single_wall(self,
               source_pos: ArrayLike,
@@ -106,16 +106,44 @@ class NBody(Solver):
         $ (x', y', z') = (x, y, 2z_{wall} - z) $
         '''
 
-        if self.wall_position is None or self.wall_permittivity is None:
+        if self.floor_z is None or self.floor_permittivity is None:
             raise ValueError("Wall position and permittivity must be provided for single wall boundary condition.")
 
         eps = self.permittivity
-        eps_wall = self.wall_permittivity
-        z_wall = self.wall_position
-        image_pos = np.copy(source_pos)
-        image_pos[2::3] = 2*z_wall - image_pos[2::3]
-        source_pos = np.concatenate((source_pos, image_pos), axis=0)
-        charges = np.concatenate((charges, charges * (-eps_wall + eps) / (eps_wall + eps)), axis=0)
+        eps_wall  = self.floor_permittivity
+        floor_z    = self.floor_z
+        image_charges, image_pos = generate_image_charges(eps, eps_wall, eps, floor_z, 0, charges, source_pos, n_rebounds=1)
+        if self.need_complex:
+            real_charges = image_charges.real
+            imag_charges = image_charges.imag
+            real_potential, real_field = self._solve_open_open_open(image_pos, target_pos, real_charges, compute_potential, compute_field)
+            imag_potential, imag_field = self._solve_open_open_open(image_pos, target_pos, imag_charges, compute_potential, compute_field)
+            return real_potential + 1j * imag_potential, real_field + 1j * imag_field
+        return self._solve_open_open_open(image_pos, target_pos, image_charges, compute_potential, compute_field)
 
-        return self._solve_open_open_open(source_pos, target_pos, charges, compute_potential, compute_field)
-
+    def _solve_open_open_two_walls(self,
+              source_pos: ArrayLike,
+              target_pos: ArrayLike,
+              charges: ArrayLike,
+              compute_potential: bool = True,
+              compute_field: bool = True) -> tuple[ArrayLike, ArrayLike]:
+        eps       = self.permittivity
+        eps_floor = self.floor_permittivity
+        eps_ceil  = self.ceil_permittivity
+        z_floor   = self.floor_z
+        z_ceil    = self.ceil_z
+        n_rebounds = two_walls_convergence_criterion(eps, eps_floor, eps_ceil, tol=self.two_walls_tolerance)
+        image_charges, image_pos = generate_image_charges(eps, eps_floor, eps_ceil, z_floor, z_ceil, charges, source_pos, n_rebounds)
+        if self.need_complex:
+            eps_conj = eps.conjugate()
+            self.permittivity = (eps*eps_conj).real
+            real_charges = image_charges.real.astype(cp.float64)
+            real_pos = image_pos.real.astype(cp.float64)
+            imag_charges = image_charges.imag.astype(cp.float64)
+            imag_pos = image_pos.imag.astype(cp.float64)
+            target_pos = target_pos.astype(cp.float64)
+            real_potential, real_field = self._solve_open_open_open(image_pos, target_pos, real_charges, compute_potential, compute_field)
+            imag_potential, imag_field = self._solve_open_open_open(image_pos, target_pos, imag_charges, compute_potential, compute_field)
+            self.permittivity = eps
+            return (real_potential + 1j * imag_potential)*eps_conj, (real_field + 1j * imag_field)*eps_conj
+        return self._solve_open_open_open(image_pos, target_pos, image_charges, compute_potential, compute_field)

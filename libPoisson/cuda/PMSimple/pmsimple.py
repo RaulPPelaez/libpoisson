@@ -43,7 +43,7 @@ class PMSimple(Solver):
         '''
         eps = self.permittivity
         eps4pi = 4 * pi * eps
-        self.pot = target_pos[::3] * 0
+        self.pot = target_pos[:,0] * 0
         self.field = target_pos * 0
 
         source_pos = source_pos.reshape(-1, 3)
@@ -69,4 +69,4 @@ class PMSimple(Solver):
         self.pot = spreadinterp.interpolate(target_pos, potential_grid, self.L, kernel=self.kernel)
         self.field = spreadinterp.interpolate(target_pos, field_grid, self.L, kernel=self.kernel)
 
-        return self.pot, self.field.flatten()
+        return self.pot, self.field

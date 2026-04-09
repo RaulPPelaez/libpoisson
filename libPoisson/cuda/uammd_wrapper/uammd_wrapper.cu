@@ -118,28 +118,25 @@ void PSEWrapper::compute_poisson(real *i_pos, real *i_charge, real *i_field, rea
     auto fieldPotential = solver->computeFieldPotentialAtParticles();
     //This assumes that the field and potential are stored in a contiguous array, with the field being 3 components per particle and the potential being 1 component per particle. If this is not the case, this code will need to be modified to account for the actual layout of the data.
     thrust::for_each(thrust::cuda::par,
-    thrust::make_counting_iterator<int>(0),
-    thrust::make_counting_iterator<int>(numberParticles),
-    [fp = thrust::raw_pointer_cast(fieldPotential.data()),
-     field = i_field,
-     pot = i_potential] __device__ (int i) {
+            thrust::make_counting_iterator<int>(0),
+            thrust::make_counting_iterator<int>(numberParticles),
+            [fp = thrust::raw_pointer_cast(fieldPotential.data()),
+            field = i_field,
+            pot = i_potential] __device__ (int i) {
 
-        real4 v = fp[i];
+            real4 v = fp[i];
 
-        field[3*i + 0] = v.x;
-        field[3*i + 1] = v.y;
-        field[3*i + 2] = v.z;
+            field[3*i + 0] = v.x;
+            field[3*i + 1] = v.y;
+            field[3*i + 2] = v.z;
 
-        pot[i] = v.w;
-    });
+            pot[i] = v.w;
+            });
 }
 
 void DPSlabWrapper::compute_poisson(real *i_pos, real *i_charge, real *i_field, real *i_potential,
         int numberParticles) {
-    if (!pd || numberParticles != pd->getNumParticles()) {
-        pd = std::make_shared<ParticleData>(numberParticles);
-        solver = createDPSlabInteractor(pd, Lx, Ly, Lz, permInside, permTop, permBottom, gw, tolerance, split);
-    }
+    pd = std::make_shared<ParticleData>(numberParticles);
 
     {
         auto pos = pd->getPos(access::gpu, access::write);
@@ -150,23 +147,25 @@ void DPSlabWrapper::compute_poisson(real *i_pos, real *i_charge, real *i_field, 
         thrust::copy(thrust::cuda::par, i_charge, i_charge + numberParticles,
                 charge.begin());
     }
+    solver = createDPSlabInteractor(pd, Lx, Ly, Lz, permInside, permTop, permBottom, gw, tolerance, split);
     auto fieldPotential = solver->computeFieldPotentialAtParticles();
+    cudaDeviceSynchronize();
     //This assumes that the field and potential are stored in a contiguous array, with the field being 3 components per particle and the potential being 1 component per particle. If this is not the case, this code will need to be modified to account for the actual layout of the data.
     thrust::for_each(thrust::cuda::par,
-    thrust::make_counting_iterator<int>(0),
-    thrust::make_counting_iterator<int>(numberParticles),
-    [fp = thrust::raw_pointer_cast(fieldPotential.data()),
-     field = i_field,
-     pot = i_potential] __device__ (int i) {
+            thrust::make_counting_iterator<int>(0),
+            thrust::make_counting_iterator<int>(numberParticles),
+            [fp = thrust::raw_pointer_cast(fieldPotential.data()),
+            field = i_field,
+            pot = i_potential] __device__ (int i) {
 
-        real4 v = fp[i];
+            real4 v = fp[i];
 
-        field[3*i + 0] = v.x;
-        field[3*i + 1] = v.y;
-        field[3*i + 2] = v.z;
+            field[3*i + 0] = v.x;
+            field[3*i + 1] = v.y;
+            field[3*i + 2] = v.z;
 
-        pot[i] = v.w;
-    });
+            pot[i] = v.w;
+            });
 }
 
 

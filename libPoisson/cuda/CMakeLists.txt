@@ -49,20 +49,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(uammd)
 
-set(BLA_VENDOR Generic)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
-
-
 nanobind_add_module(
     _uammd
     uammd_wrapper/uammd_wrapper.cu
 )
+uammd_setup_target(_uammd)
 
-target_include_directories(_uammd PRIVATE "${uammd_SOURCE_DIR}/src")
-target_include_directories(_uammd PRIVATE "${uammd_SOURCE_DIR}/src/third_party")
-target_link_libraries(_uammd PRIVATE CUDA::cudart CUDA::cufft CUDA::curand BLAS::BLAS LAPACK::LAPACK lapacke)
-target_compile_options(_uammd PRIVATE --extended-lambda)
+target_compile_options(_uammd PRIVATE -DMAXLOGLEVEL=0 -DUAMMD_DEBUG)
 install(TARGETS _uammd LIBRARY DESTINATION ./cuda/)
 # Esto es opcional pero ayuda a depurar:
 message(STATUS "Configurando modulo: _uammd")

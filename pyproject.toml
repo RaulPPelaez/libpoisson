@@ -1,33 +1,27 @@
 [build-system]
-# Definimos las herramientas necesarias para construir el paquete
 requires = ["scikit-build-core>=0.5.0", "nanobind>=1.6.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "libPoisson"
-dynamic = ["version"]  # La versión la leeremos de Git como hacías en el setup.py
-description = "Librería de Poisson con soporte CUDA y UAMMD"
+dynamic = ["version"]
+description = "Poisson solver for gaussian charge distributions"
 readme = "README.md"
 authors = [{ name = "Pablo", email = "pablodiezsilva@gmail.com" }]
 requires-python = ">=3.8"
 dependencies = [
-    "numpy", # Añade aquí tus dependencias de ejecución
+    "numpy"
 ]
 
 [tool.scikit-build]
-# Esto sustituye a tu lógica de 'install_dir'.
-# Coloca el .so dentro de la carpeta del paquete libPoisson
 wheel.install-dir = "libPoisson"
 
-# Equivalente a tus cmake_args en el setup.py
 [tool.scikit-build.cmake.define]
 DOUBLEPRECISION = "0"
-USE_CUDA = "1"  # Valor por defecto
+USE_CUDA = "1"
 
 [tool.scikit-build.metadata.version]
-# Esto replica tu lógica de 'git describe' para la versión
 provider = "scikit_build_core.metadata.setuptools_scm"
 
 [tool.setuptools_scm]
-# Configuración para que lea los tags de git
 write_to = "libPoisson/_version.py"

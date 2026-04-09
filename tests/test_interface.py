@@ -7,12 +7,17 @@ import cupy as cp
 
 EXTRA_PARAMETERS = {
         "TriplePeriodic": {
-            "No_wall":{"Lx": 1.0, "Ly": 1.0, "Lz": 1.0, "splitting_ratio": 0.1, "tolerance": 1e-1}
+            "No_wall":{"Lx": 1.0, "Ly": 1.0, "Lz": 1.0, "splitting_ratio": -1.0, "tolerance": 1e-1}
             },
         "Open": {
             "Single_wall": {"floor_z": 0.0, "floor_permittivity": 1.0},
             "Double_wall": {"floor_z": 0.0, "floor_permittivity": 1.0, "ceil_z": 1.0, "ceil_permittivity": 1.0}
-                  }
+                  },
+        "DoublePeriodic": {
+            "No_wall": {"Lx": 3.0, "Ly": 3.0, "Lz":3.0, "splitting_ratio": 2.0, "tolerance": 1e-1},
+            "Single_wall": {"Lx": 3.0, "Ly": 3.0, "Lz":3.0, "splitting_ratio": 2.0, "tolerance": 1e-1, "permittivity_bottom": 1.0},
+            "Double_wall": {"Lx": 3.0, "Ly": 3.0, "Lz":3.0, "splitting_ratio": 2.0, "tolerance": 1e-1, "permittivity_bottom": 1.0, "permittivity_top": 1.0}
+            },
     }
 
 @pytest.mark.parametrize("periodicity", lb.AVAILABLE_PERIODICITIES)
@@ -49,8 +54,9 @@ def test_solve(periodicity, wall):
             pytest.fail(f"Unexpected failure for {periodicity}, {wall}: {e}")
 
     if solver is not None:
-        source_pos = cp.zeros((1, 3))
-        charge = cp.array([1.0])
+        source_pos = cp.zeros((2, 3))
+        source_pos[1] = cp.array([0.5, 0.5, 0.5])
+        charge = cp.array([1.0, -1.0])
         target_pos = cp.ones((1, 3))
         potential, field = solver.solve(source_pos, target_pos, charge)
         assert potential.shape == (1,)

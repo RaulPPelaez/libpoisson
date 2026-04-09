@@ -1,18 +1,20 @@
 from .cuda.NBody.nbody import NBody
 from .cuda.PMSimple.pmsimple import PMSimple
 from .cuda.UAMMD_PSE.uammd_pse import uammdPSE
+from .cuda.UAMMD_DPslab.uammd_dpslab import uammdDPSlab
 
 AVAILABLE_WALLS = ["No_wall", "Single_wall", "Double_wall"]
 
 SOLVER_MAP = {
     'Open': NBody,
-    'TriplePeriodic': uammdPSE
+    'TriplePeriodic': uammdPSE,
+    'DoublePeriodic': uammdDPSlab
 }
 
 AVAILABLE_PERIODICITIES = list(SOLVER_MAP.keys())
 XY_PERIODICIY_MAP = {
         'Open': 'open',
-        'DoulePeriodic': 'periodic',
+        'DoublePeriodic': 'periodic',
         'TriplePeriodic': 'periodic'
     }
 

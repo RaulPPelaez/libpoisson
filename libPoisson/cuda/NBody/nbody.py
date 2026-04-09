@@ -65,7 +65,6 @@ class NBody(Solver):
         assert source_pos.shape[0] == charges.shape[0], "Number of source positions must match number of charges."
         assert source_pos.shape[1] == 3, "Source positions must be 3D."
         assert target_pos.shape[1] == 3, "Target positions must be 3D."
-        print("Solving N-body problem with open-open-open boundary condition...")
         eps = self.permittivity
         eps4pi = 4 * pi * eps
         a = self.gaussian_width  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).

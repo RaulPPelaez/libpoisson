@@ -3,20 +3,20 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python < 3.13
+  - python > 3.13
   - cupy
   - numba
   - numpy
   - pip
   - pytest
   - scipy
+  - cuda-version==12.3
   - cuda-libraries-dev
-  - cuda-nvcc
-  - cuda-version
+  - cuda-compiler
   - mkl-devel
   - cmake
   - make
-  - gxx
+  - cxx-compiler
   - blas-devel
   - libblas
   - liblapacke

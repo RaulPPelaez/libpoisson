@@ -1,10 +1,14 @@
 enable_language(CUDA)
-find_package(CUDAToolkit REQUIRED)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/" "$ENV{CONDA_PREFIX}/share/cmake/Modules")
 if(NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
+
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 add_compile_definitions(PUBLIC MAXLOGLEVEL=5)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
@@ -13,7 +17,7 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
 # Set CUDA archs so all supported GPUs are covered
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES "all")
+  set(CMAKE_CUDA_ARCHITECTURES 89)
 endif()
 IF (CMAKE_BUILD_TYPE MATCHES "Debug")
   if(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA")
@@ -55,7 +59,4 @@ nanobind_add_module(
 )
 uammd_setup_target(_uammd)
 
-target_compile_options(_uammd PRIVATE -DMAXLOGLEVEL=0 -DUAMMD_DEBUG)
 install(TARGETS _uammd LIBRARY DESTINATION ./cuda/)
-# Esto es opcional pero ayuda a depurar:
-message(STATUS "Configurando modulo: _uammd")

@@ -95,7 +95,7 @@ auto createDPSlabInteractor(std::shared_ptr<ParticleData> pd, real Lx, real Ly, 
     par.permitivity = perm;
     par.gw = gaussianWidth;
     par.split = split;
-    auto solver = make_shared<DPPoissonSlab>(pd, par);
+    auto solver = std::make_shared<DPPoissonSlab>(pd, par);
     return solver;
 }
 

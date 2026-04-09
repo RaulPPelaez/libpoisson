@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "libPoisson"
-dynamic = ["version"]
+dynamic = 0.1.0
 description = "Poisson solver for gaussian charge distributions"
 readme = "README.md"
 authors = [{ name = "Pablo", email = "pablodiezsilva@gmail.com" }]

@@ -1,5 +1,5 @@
 import numba
-from numba import cuda
+from numba import cuda, float32
 import numpy as np
 import math
 
@@ -36,65 +36,28 @@ def coulomb_interaction(tx, ty, tz, sx, sy, sz, sq, a):
 # Kernel
 # ----------------------------------
 @cuda.jit
-def nbody_kernel(pos_target, pos_source, field_potential, a):
-    tid = cuda.blockIdx.x * cuda.blockDim.x + cuda.threadIdx.x
-
-    N_target = pos_target.shape[0]
-    N_source = pos_source.shape[0]
-
-    if tid >= N_target:
+def nbody_kernel(target, source, nt, ns, field_potential, a):
+    i = cuda.grid(1)
+    if i >= nt:
         return
-
-    tx = pos_target[tid, 0]
-    ty = pos_target[tid, 1]
-    tz = pos_target[tid, 2]
-
-    Ex_total = 0.0
-    Ey_total = 0.0
-    Ez_total = 0.0
-    phi_total = 0.0
-
-    threads_per_block = cuda.blockDim.x
-
-    # Shared memory dinámica (float32)
-    sh_src = cuda.shared.array(shape=0, dtype=numba.float32)
-
-    num_tiles = (N_source + threads_per_block - 1) // threads_per_block
-
-    for tile in range(num_tiles):
-
-        i_load = tile * threads_per_block + cuda.threadIdx.x
-
-        # Carga en shared memory
-        if i_load < N_source:
-            base = cuda.threadIdx.x * 4
-            sh_src[base + 0] = pos_source[i_load, 0]
-            sh_src[base + 1] = pos_source[i_load, 1]
-            sh_src[base + 2] = pos_source[i_load, 2]
-            sh_src[base + 3] = pos_source[i_load, 3]
-
-        cuda.syncthreads()
-
-        tile_size = min(threads_per_block, N_source - tile * threads_per_block)
-
-        for j in range(tile_size):
-            base = j * 4
-
-            sx = sh_src[base + 0]
-            sy = sh_src[base + 1]
-            sz = sh_src[base + 2]
-            sq = sh_src[base + 3]
-
-            Ex, Ey, Ez, phi = coulomb_interaction(tx, ty, tz, sx, sy, sz, sq, a)
-
-            Ex_total += Ex
-            Ey_total += Ey
-            Ez_total += Ez
-            phi_total += phi
-
-        cuda.syncthreads()
-
-    field_potential[tid, 0] = Ex_total
-    field_potential[tid, 1] = Ey_total
-    field_potential[tid, 2] = Ez_total
-    field_potential[tid, 3] = phi_total
+    Ex = 0.0
+    Ey = 0.0
+    Ez = 0.0
+    phi = 0.0
+    tx = target[i, 0]
+    ty = target[i, 1]
+    tz = target[i, 2]
+    for j in range(ns):
+        sx = source[j, 0]
+        sy = source[j, 1]
+        sz = source[j, 2]
+        sq = source[j, 3]
+        dEx, dEy, dEz, dphi = coulomb_interaction(tx, ty, tz, sx, sy, sz, sq, a)
+        Ex += dEx
+        Ey += dEy
+        Ez += dEz
+        phi += dphi
+    field_potential[i, 0] += Ex
+    field_potential[i, 1] += Ey
+    field_potential[i, 2] += Ez
+    field_potential[i, 3] += phi

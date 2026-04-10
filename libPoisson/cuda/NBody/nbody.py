@@ -68,16 +68,16 @@ class NBody(Solver):
         eps = self.permittivity
         eps4pi = 4 * pi * eps
         a = self.gaussian_width  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).
-        threads_per_block = 256 # Number of threads per block (can be tuned for performance)
         M = len(target_pos[:,0])
-        blocks_per_grid = (M + threads_per_block - 1) // threads_per_block # Number of blocks needed to cover all target positions
-        shmem_size = int(threads_per_block * 4 * 8) # Shared memory size needed for the kernel (3 coordinates per thread, 8 bytes per double)
-        field_potential = cp.zeros((M, 4), dtype=cp.float64)
-        source_pos_charge = cp.zeros((len(source_pos[:,0]), 4), dtype=cp.float64)
-        source_pos_charge[:, :3] = source_pos.reshape(-1, 3).astype(cp.float64)
-        source_pos_charge[:, 3] = charges.astype(cp.float64)
-        target_pos = cp.asarray(target_pos, dtype=cp.float64).reshape(-1, 3)
-        nbody_kernel[blocks_per_grid, threads_per_block, 0, shmem_size](target_pos, source_pos_charge, field_potential, a)
+        N = len(source_pos[:,0])
+        field_potential = cp.zeros((M, 4), dtype=cp.float32)
+        source_pos_charge = cp.zeros((len(source_pos[:,0]), 4), dtype=cp.float32)
+        source_pos_charge[:, :3] = source_pos.reshape(-1, 3).astype(cp.float32)
+        source_pos_charge[:, 3] = charges.astype(cp.float32)
+        target_pos = cp.asarray(target_pos, dtype=cp.float32).reshape(-1, 3)
+        threads_per_block = 256
+        blocks_per_grid = (M + threads_per_block - 1) // threads_per_block
+        nbody_kernel[blocks_per_grid, threads_per_block](target_pos, source_pos_charge, M, N, field_potential, a)
         field_potential /= eps4pi
 
         if not compute_potential:

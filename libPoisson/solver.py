@@ -101,7 +101,6 @@ class Solver(ABC):
         solver = getattr(self, solver_name, None)
         if solver:
             if self.need_complex and not isinstance(charges, complex):
-                print("Computing complex potential and field by separating real and imaginary parts of the charges.")
                 real_charges = charges.real
                 imag_charges = charges.imag
                 real_potential, real_field = solver(source_pos, target_pos, real_charges, compute_potential, compute_field)

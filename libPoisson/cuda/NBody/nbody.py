@@ -4,7 +4,7 @@ import cupy as cp
 import numpy as np
 from numba import cuda, float64
 from math import sqrt, erf, exp, pi
-from .utils.new_nbody_kernel import nbody_kernel
+from .utils.nbody_kernel import nbody_kernel
 from .utils.image_charges import generate_image_charges, two_walls_convergence_criterion
 from numpy.typing import ArrayLike
 

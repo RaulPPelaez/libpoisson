@@ -10,13 +10,15 @@ dependencies:
   - pip
   - pytest
   - scipy
-  - cuda-version==12.3
+
+  # CUDA stack
+  - cuda-version<12.9
   - cuda-libraries-dev
   - cuda-compiler
-  - mkl-devel
-  - cmake
+  - cmake >= 3.24
   - make
   - cxx-compiler
+  - c-compiler
   - blas-devel
   - libblas
   - liblapacke

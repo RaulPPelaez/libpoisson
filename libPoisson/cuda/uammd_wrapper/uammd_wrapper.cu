@@ -40,6 +40,7 @@ class DPSlabWrapper{
     real gw;
     real tolerance;
     real split;
+    real totalCharge;
     public:
     DPSlabWrapper(real Lx, real Ly, real Lz, real permInside, real permTop, real permBottom, real gw, real tolerance = 1e-3, real split = -1.0)
         : Lx(Lx), Ly(Ly), Lz(Lz), permInside(permInside), permTop(permTop), permBottom(permBottom), gw(gw), tolerance(tolerance), split(split) {}
@@ -136,20 +137,36 @@ void PSEWrapper::compute_poisson(real *i_pos, real *i_charge, real *i_field, rea
 
 void DPSlabWrapper::compute_poisson(real *i_pos, real *i_charge, real *i_field, real *i_potential,
         int numberParticles) {
-    pd = std::make_shared<ParticleData>(numberParticles);
+    if (!pd || numberParticles != pd->getNumParticles()) { //Only first time compute_poisson is called, we create the ParticleData and the solver. This is because the solver needs to know the number of particles to create the necessary data structures, and we don't want to recreate these data structures every time compute_poisson is called, as that would be very inefficient.
+        pd = std::make_shared<ParticleData>(numberParticles);
+        totalCharge = thrust::reduce(thrust::cuda::par, i_charge, i_charge + numberParticles, 0.0f, thrust::plus<real>());
+        {
+            auto charge = pd->getCharge(access::gpu, access::write);
+            thrust::copy(thrust::cuda::par, i_charge, i_charge + numberParticles,
+                    charge.begin());
+        }
+        solver = createDPSlabInteractor(pd, Lx, Ly, Lz, permInside, permTop, permBottom, gw, tolerance, split);
+    }
 
     {
         auto pos = pd->getPos(access::gpu, access::write);
         const real3 *i_pos3 = reinterpret_cast<real3 *>(i_pos);
         thrust::transform(thrust::cuda::par, i_pos3, i_pos3 + numberParticles,
                 pos.begin(), ToReal4());
+        real totalCharge_given = thrust::reduce(thrust::cuda::par, i_charge, i_charge + numberParticles, 0.0f, thrust::plus<real>());
+        if (abs(totalCharge_given - totalCharge) > tolerance) {
+            throw nb::value_error(
+                    "Total charge has changed since initialization. \n"
+                    "Double Periodic systems requires a constant total charge due to performance optimizations. \n"
+                    "If you need to change the total charge, you will need to create a new instance of the solver."
+                    );
+        }
         auto charge = pd->getCharge(access::gpu, access::write);
         thrust::copy(thrust::cuda::par, i_charge, i_charge + numberParticles,
                 charge.begin());
     }
-    solver = createDPSlabInteractor(pd, Lx, Ly, Lz, permInside, permTop, permBottom, gw, tolerance, split);
     auto fieldPotential = solver->computeFieldPotentialAtParticles();
-    cudaDeviceSynchronize();
+    //cudaDeviceSynchronize();
     //This assumes that the field and potential are stored in a contiguous array, with the field being 3 components per particle and the potential being 1 component per particle. If this is not the case, this code will need to be modified to account for the actual layout of the data.
     thrust::for_each(thrust::cuda::par,
             thrust::make_counting_iterator<int>(0),

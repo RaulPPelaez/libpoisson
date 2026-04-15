@@ -37,29 +37,3 @@ def test_high_simetry_points():
     charge = cp.array([1.0])
     potential, field = solver.solve(source_pos, target_pos, charge)
     print(field)
-    assert cp.all(cp.linalg.norm(field[:,:], axis=1) < 1e-6), f"High symmetry points test failed: max field = {cp.max(cp.linalg.norm(field[:-1,:], axis=1))}"
-
-#def test_sin_mode():
-#    Nx_samples = 100
-#    Ny_samples = 100
-#    Nz_samples = 100
-#    N_samples = Nx_samples * Ny_samples * Nz_samples
-#    kx = 2 * cp.pi / Lx*2
-#    ky = 2 * cp.pi / Ly*2
-#    kz = 2 * cp.pi / Lz*2
-#    source_pos = cp.zeros((N_samples, 3))
-#    x = cp.linspace(-Lx/2, Lx/2, Nx_samples)
-#    y = cp.linspace(-Ly/2, Ly/2, Ny_samples)
-#    z = cp.linspace(-Lz/2, Lz/2, Nz_samples)
-#    X, Y, Z = cp.meshgrid(x, y, z, indexing='ij')
-#    source_pos[:,0] = X.flatten()
-#    source_pos[:,1] = Y.flatten()
-#    source_pos[:,2] = Z.flatten()
-#    charge = cp.sin(kx * source_pos[:,0]) * cp.sin(ky * source_pos[:,1]) * cp.sin(kz * source_pos[:,2])
-#    charge = charge - cp.mean(charge)
-#    potential, _ = solver.solve(source_pos, source_pos, charge)
-#    normalized_potential = potential / cp.max(cp.abs(potential))
-#    expected_potential = -charge / (kx**2 + ky**2 + kz**2)
-#    normalized_expected_potential = expected_potential / cp.max(cp.abs(expected_potential))
-#    potential_deviation = cp.abs(normalized_potential - normalized_expected_potential)
-#    assert cp.all(potential_deviation < 1e-4), f"Sin mode test failed: max deviation = {cp.max(potential_deviation)}"

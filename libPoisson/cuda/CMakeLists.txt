@@ -16,9 +16,11 @@ set(CMAKE_CUDA_STANDARD 20)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
 # Set CUDA archs so all supported GPUs are covered
+message(CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES})
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
   set(CMAKE_CUDA_ARCHITECTURES 89)
 endif()
+message(CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES})
 IF (CMAKE_BUILD_TYPE MATCHES "Debug")
   if(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA")
     set(CMAKE_CUDA_FLAGS "-g -G -src-in-ptx -fPIC")
@@ -53,10 +55,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(uammd)
 
+set(BLA_VENDOR Generic)
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+
 nanobind_add_module(
     _uammd
     uammd_wrapper/uammd_wrapper.cu
 )
 uammd_setup_target(_uammd)
+target_link_libraries(_uammd PRIVATE cblas)
 
 install(TARGETS _uammd LIBRARY DESTINATION ./cuda/)

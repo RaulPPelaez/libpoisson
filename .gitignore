@@ -8,6 +8,7 @@ cpp/example
 temp
 *.o
 build
+*_build
 docs/source/generated
 *.egg-info
 .cache/

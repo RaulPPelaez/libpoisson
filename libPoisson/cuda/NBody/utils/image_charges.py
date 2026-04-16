@@ -1,18 +1,18 @@
 import cupy as np
 def generate_image_charges(eps0, eps1, eps2, z1, z2, cargas, posiciones, n_rebounds):
     """
-    Genera todas las imágenes hasta n_rebounds para posiciones 3D (N,3),
-    usando el método de reflexiones múltiples entre dos planos.
-    Parámetros:
-    - eps1, eps0, eps2: permitividades
-    - z1, z2: posiciones de los planos
+    Generates all image charges up to n_rebounds for 3D positions (N,3),
+    using the multiple reflection method between two planes.
+    Parameters:
+    - eps1, eps0, eps2: permittivities
+    - z1, z2: positions of the planes
     - cargas: array (N,)
     - posiciones: array (N,3)
-    - n_rebounds: número de reflexiones a generar
+    - n_rebounds: number of reflections to generate
 
-    Devuelve:
-    - cargas_ext: array de cargas incluyendo imágenes
-    - posiciones_ext: array de posiciones (M,3) incluyendo imágenes
+    Returns:
+    - cargas_ext: array of charges including images
+    - posiciones_ext: array of positions (M,3) including images
     """
     cargas = np.atleast_1d(cargas)
     posiciones = np.atleast_2d(posiciones)

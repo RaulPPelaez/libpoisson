@@ -3,9 +3,6 @@ from abc import ABC, abstractmethod
 from numpy.typing import ArrayLike
 from math import sqrt
 
-
-PERIODICITY_OPTIONS = ['periodic', 'open', 'single_wall', 'two_walls','unspecify']
-
 class Solver(ABC):
     '''
     A virtual class for solving the Poisson equation under different periodicity conditions.
@@ -16,18 +13,6 @@ class Solver(ABC):
 
     charge_radius: float
         Characteristic length of the charge distribution, used for regularization to avoid singularities in the potential and field calculations.
-
-    periodicityX: str
-        Periodicity condition in the X direction. Must be one of: 'periodic', 'open', 'single_wall', 'two_walls'.
-
-    periodicityY: str
-        Periodicity condition in the Y direction. Must be one of: 'periodic', 'open', 'single_wall', 'two_walls'.
-
-    periodicityZ: str
-        Periodicity condition in the Z direction. Must be one of: 'periodic', 'open', 'single_wall', 'two_walls'.
-
-    need_complex: bool, optional
-        Whether to compute the complex potential and field. Default is False.
 
     Methods
     -------
@@ -41,7 +26,6 @@ class Solver(ABC):
     Notes
     -----
     - The actual implementation of the solve method must be provided in the subclasses that inherit from this.
-    - Developers must implement the _solve_{periodicityX}_{periodicityY}_{periodicityZ} method for each combination of periodicity conditions they wish to support.
     '''
     def __init__(self,
                  permittivity: float,
@@ -54,12 +38,6 @@ class Solver(ABC):
         self.permittivity = permittivity
         self.charge_radius = charge_radius
         self.gaussian_width = self.charge_radius * sqrt(2/3)  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).
-        if periodicityX not in PERIODICITY_OPTIONS or periodicityY not in PERIODICITY_OPTIONS or periodicityZ not in PERIODICITY_OPTIONS:
-            raise ValueError("Invalid periodicity option. Must be one of: {}".format(PERIODICITY_OPTIONS))
-        self.periodicityX = periodicityX
-        self.periodicityY = periodicityY
-        self.periodicityZ = periodicityZ
-        self.need_complex = need_complex
 
     def solve(self,
               source_pos: ArrayLike,
@@ -74,11 +52,11 @@ class Solver(ABC):
 
         Parameters
         ----------
-        source_pos: ArrayLike, shape (3N)
-            Positions of N source charges in the format (x1, y1, z1, x2, y2, z2, ..., xN, yN, zN)
+        source_pos: ArrayLike, shape (N,3)
+            Positions of N source charges in the format [[x1, y1, z1], [x2, y2, z2], ..., [xN, yN, zN]]
 
-        target_pos: ArrayLike, shape (3M)
-            Positions of M target points in the format (x1, y1, z1, x2, y2, z2, ..., xM, yM, zM)
+        target_pos: ArrayLike, shape (M,3)
+            Positions of M target points in the format [[x1, y1, z1], [x2, y2, z2], ..., [xM, yM, zM]]
 
         charges: ArrayLike, shape (N,)
             Charges of the N source charges.
@@ -94,21 +72,12 @@ class Solver(ABC):
         potential: ArrayLike, shape (M,)
             The computed potential at each target point. Returned if compute_potential is True.
 
-        field: ArrayLike, shape (3M,)
+        field: ArrayLike, shape (M,3)
             The computed electric field at each target point in the format (Ex1, Ey1, Ez1, Ex2, Ey2, Ez2, ..., ExM, EyM, EzM). Returned if compute_field is True.
         '''
-        solver_name = f"_solve_{self.periodicityX}_{self.periodicityY}_{self.periodicityZ}"
-        solver = getattr(self, solver_name, None)
-        if solver:
-            if self.need_complex and not isinstance(charges, complex):
-                real_charges = charges.real
-                imag_charges = charges.imag
-                real_potential, real_field = solver(source_pos, target_pos, real_charges, compute_potential, compute_field)
-                imag_potential, imag_field = solver(source_pos, target_pos, imag_charges, compute_potential, compute_field)
-                return real_potential + 1j * imag_potential, real_field + 1j * imag_field
-            else:
-                return solver(source_pos, target_pos, charges, compute_potential, compute_field)
-        raise NotImplementedError("The solver for periodicity (X={}, Y={}, Z={}) is not implemented.".format(self.periodicityX, self.periodicityY, self.periodicityZ))
+
+        raise NotImplementedError("The solve method must be implemented in the subclass.")
+
 
     def __call__(self,
                  source_pos: ArrayLike,

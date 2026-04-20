@@ -66,4 +66,4 @@ nanobind_add_module(
 uammd_setup_target(_uammd)
 target_link_libraries(_uammd PRIVATE cblas)
 
-install(TARGETS _uammd LIBRARY DESTINATION ./cuda/)
+install(TARGETS _uammd LIBRARY DESTINATION ./solvers_cuda/)

@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from numpy.typing import ArrayLike
 from math import sqrt
-
+from .parameters.base import BaseParameters
 class Solver(ABC):
     '''
     A virtual class for solving the Poisson equation under different periodicity conditions.
@@ -27,17 +27,12 @@ class Solver(ABC):
     -----
     - The actual implementation of the solve method must be provided in the subclasses that inherit from this.
     '''
-    def __init__(self,
-                 permittivity: float,
-                 charge_radius: float,
-                 periodicityX: str,
-                 periodicityY: str,
-                 periodicityZ: str,
-                 need_complex: bool = False
-                 ):
-        self.permittivity = permittivity
-        self.charge_radius = charge_radius
-        self.gaussian_width = self.charge_radius * sqrt(2/3)  # Assuming charge_radius is the mean cuadratic radius sqrt(<r^2>) and charge distribution rho=exp(-(r/a)^2) then a = charge_radius * sqrt(2/3).
+    def __init__(self, parameters: BaseParameters):
+        self.parameters = parameters
+        self.parameters.gaussian_width = self.parameters.charge_radius #For now we use the charge radius as the width of the Gaussian distribution for regularization, but this can be modified in the future if needed.
+
+    def __getattr__(self, name):
+        return getattr(self.parameters, name)
 
     def solve(self,
               source_pos: ArrayLike,

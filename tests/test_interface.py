@@ -1,78 +1,73 @@
 def test_import():
     import libPoisson as lp
 
-import libPoisson as lb
+import libPoisson as lp
 import pytest
 import cupy as cp
 
+bctype = lp.BCType
+bc_cls = lp.BoundaryConditions
+
+Open = bctype.OPEN
+Single_wall = bctype.SINGLE_WALL
+Double_wall = bctype.DOUBLE_WALL
+Periodic = bctype.PERIODIC
+NBodySingleWall = bc_cls(Open, Open, Single_wall)
+NBodyDoubleWall = bc_cls(Open, Open, Double_wall)
+TriplePeriodic = bc_cls(Periodic, Periodic, Periodic)
+DoublePeriodic = bc_cls(Periodic, Periodic, Open)
+DoublePeriodic_SingleWall = bc_cls(Periodic, Periodic, Single_wall)
+DoublePeriodic_DoubleWall = bc_cls(Periodic, Periodic, Double_wall)
 EXTRA_PARAMETERS = {
-        "TriplePeriodic": {
-            "No_wall":{"Lx": 1.0, "Ly": 1.0, "Lz": 1.0, "splitting_ratio": -1.0, "tolerance": 1e-1}
-            },
-        "Open": {
-            "Single_wall": {"floor_z": 0.0, "floor_permittivity": 1.0},
-            "Double_wall": {"floor_z": 0.0, "floor_permittivity": 1.0, "ceil_z": 1.0, "ceil_permittivity": 1.0}
-                  },
-        "DoublePeriodic": {
-            "No_wall": {"Lx": 3.0, "Ly": 3.0, "Lz":3.0, "splitting_ratio": 2.0, "tolerance": 1e-1},
-            "Single_wall": {"Lx": 3.0, "Ly": 3.0, "Lz":3.0, "splitting_ratio": 2.0, "tolerance": 1e-1, "permittivity_bottom": 1.0},
-            "Double_wall": {"Lx": 3.0, "Ly": 3.0, "Lz":3.0, "splitting_ratio": 2.0, "tolerance": 1e-1, "permittivity_bottom": 1.0, "permittivity_top": 1.0}
-            },
+        TriplePeriodic: {"L":[10.0, 10.0, 10.0], "splitting_ratio": -1.0, "tolerance": 1e-1},
+        NBodySingleWall: {"bottom_wall_position": 0.0, "bottom_permittivity": 1.0},
+        NBodyDoubleWall: {"bottom_wall_position": 0.0, "bottom_permittivity": 1.0, "top_wall_position": 1.0, "top_permittivity": 1.0},
+        DoublePeriodic: {"L":(3.0, 3.0, 3.0), "splitting_ratio": 2.0, "tolerance": 1e-1},
+        DoublePeriodic_SingleWall: {"L":(3.0, 3.0, 3.0), "splitting_ratio": 2.0, "tolerance": 1e-1, "bottom_permittivity": 1.0},
+        DoublePeriodic_DoubleWall: {"L":(3.0, 3.0, 3.0), "splitting_ratio": 2.0, "tolerance": 1e-1, "bottom_permittivity": 1.0, "top_permittivity": 1.0}
     }
 
-@pytest.mark.parametrize("periodicity", lb.AVAILABLE_PERIODICITIES)
-@pytest.mark.parametrize("wall", lb.AVAILABLE_WALLS)
-def test_initialization(periodicity, wall):
-    if periodicity == "TriplePeriodic" and wall != "No_wall":
-        with pytest.raises(ValueError):
-            lb.get_solver(periodicity, wall, permittivity=1.0, charge_radius=0.1)
+def get_test_solver(key):
+    try:
+        bc, device = key
+    except ValueError:
+        bc, device, impl = key
+    if bc in EXTRA_PARAMETERS:
+        params = EXTRA_PARAMETERS[bc]
+        solver = lp.get_solver(bc, device, permittivity=1.0, charge_radius=0.1, **params)
     else:
-        try:
-            if periodicity in EXTRA_PARAMETERS and wall in EXTRA_PARAMETERS[periodicity]:
-                params = EXTRA_PARAMETERS[periodicity][wall]
-                solver = lb.get_solver(periodicity, wall, permittivity=1.0, charge_radius=0.1, **params)
-            else:
-                solver = lb.get_solver(periodicity, wall, permittivity=1.0, charge_radius=0.1)
-        except ValueError:
-            pytest.fail(f"Unexpected failure for {periodicity}, {wall}")
-
-def get_test_solver(periodicity, wall):
-    solver = None
-    if periodicity == "TriplePeriodic" and wall != "No_wall":
-        with pytest.raises(ValueError):
-            lb.get_solver(periodicity, wall, permittivity=1.0, charge_radius=0.1)
-    else:
-        try:
-            if periodicity in EXTRA_PARAMETERS and wall in EXTRA_PARAMETERS[periodicity]:
-                params = EXTRA_PARAMETERS[periodicity][wall]
-                solver = lb.get_solver(periodicity, wall, permittivity=1.0, charge_radius=0.1, **params)
-            else:
-                solver = lb.get_solver(periodicity, wall, permittivity=1.0, charge_radius=0.1)
-        except ValueError as e:
-            pytest.fail(f"Unexpected failure for {periodicity}, {wall}: {e}")
+        solver = lp.get_solver(bc, device, permittivity=1.0, charge_radius=0.1)
     return solver
 
+keys = lp.registry.core._SOLVER_REGISTRY.keys()
 
-@pytest.mark.parametrize("periodicity", lb.AVAILABLE_PERIODICITIES)
-@pytest.mark.parametrize("wall", lb.AVAILABLE_WALLS)
-def test_solve(periodicity, wall):
-    solver = get_test_solver(periodicity, wall)
+@pytest.mark.parametrize("key", keys)
+def test_initialization(key):
+    get_test_solver(key)
+
+def test_tuple_initialization():
+    solver_tuple  = lp.get_solver(("open","open","open"),"cuda", charge_radius=0.1, permittivity=1.0)
+    solver_normal = lp.get_solver(bc_cls(Open, Open, Open), lp.DeviceType.CUDA, charge_radius=0.1, permittivity=1.0)
+    assert type(solver_tuple) == type(solver_normal), "Tuple initialization did not return the same type of solver as normal initialization"
+
+@pytest.mark.parametrize("key", keys)
+def test_solve(key):
+    solver = get_test_solver(key)
     if solver is not None:
         source_pos = cp.zeros((2, 3))
         source_pos[1] = cp.array([0.5, 0.5, 0.5])
         charge = cp.array([1.0, -1.0])
         target_pos = cp.ones((1, 3))
+        assert(len(target_pos.shape) == 2)
         potential, field = solver.solve(source_pos, target_pos, charge)
         assert potential.shape == (1,)
         assert field.shape == (1, 3)
         assert potential[0] != 0.0
         assert cp.all(field[0] != 0.0)
 
-
-@pytest.mark.parametrize("periodicity", lb.AVAILABLE_PERIODICITIES)
-@pytest.mark.parametrize("wall", lb.AVAILABLE_WALLS)
-def test_Nsanity(periodicity,wall):
-    solver = get_test_solver(periodicity, wall)
+@pytest.mark.parametrize("key", keys)
+def test_Nsanity(key):
+    solver = get_test_solver(key)
     if solver is not None:
         source_pos = cp.zeros((1, 3))
         source_charge = cp.array([1.0])

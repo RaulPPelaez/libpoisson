@@ -3,7 +3,8 @@ import cupy as cp
 
 
 def test_totalchargefailure():
-    solver = lp.uammdDPSlab(20.0, 20.0, 20.0, permittivity_bottom=1.0, permittivity_top=1.0, permittivity=1.0,tolerance=1e-6, splitting_ratio=5.0, periodicityX="periodic", periodicityY="periodic", periodicityZ="open", charge_radius=0.2)
+    solver = lp.get_solver(("periodic", "periodic", "open"), "cuda",
+                           L = (20.0, 20.0, 20.0), permittivity=1.0, tolerance=1e-6, splitting_ratio=5.0, charge_radius=0.2)
 
     target_pos = cp.zeros((1, 3))
     target_pos[:, 0] = 1.0

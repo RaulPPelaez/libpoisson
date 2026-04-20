@@ -3,7 +3,7 @@ import cupy as np
 from scipy.special import erf
 
 def test_sanity():
-    solver = lp.NBody(permittivity=1.0, charge_radius=0.1,periodicityX="open",periodicityY="open",periodicityZ="open")
+    solver = lp.get_solver(("open","open","open"), "cuda", permittivity=1.0, charge_radius=0.1)
     pos = np.zeros((3, 3))  # 3 particles at the origin
     print(pos.shape)
     charges = np.array([0.0, 0.0, 0.0])
@@ -17,20 +17,20 @@ def test_sanity():
 
 
 def phi_th(r, q, eps=1.0, charge_radius=0.1):
-    a = charge_radius*np.sqrt(2/3)
+    a = charge_radius
     phi = q / (4 * np.pi * eps * r) * erf(r / a)
     phi[r == 0] = q / (4 * np.pi * eps * a)* 2 / np.sqrt(np.pi)
     return phi
 
 def E_th(x, q, eps=1.0, charge_radius=0.1):
-    a = charge_radius*np.sqrt(2/3)
+    a = charge_radius
     r = np.abs(x)
     Er = q / (4 * np.pi * eps * r**2) * ((erf(r / a)) - (r / a) * 2/np.sqrt(np.pi) * np.exp(-(r/a)**2 ))
     Er[r == 0] = 0.0
     return Er*np.sign(x)
 
 def test_green_tensor():
-    solver = lp.NBody(permittivity=1.0, charge_radius=0.1,periodicityX="open",periodicityY="open",periodicityZ="open")
+    solver = lp.get_solver(("open","open","open"), "cuda", permittivity=1.0, charge_radius=0.1)
     source_pos = np.array([[0.0, 0.0, 0.0]])
     target_x = np.linspace(-1.0, 1.0, 10)
     target_y = np.zeros_like(target_x)
@@ -44,7 +44,7 @@ def test_green_tensor():
     assert np.allclose(E.reshape(-1,3)[:, 0], E_test, atol=1e-3), "Electric field does not match theoretical values get:\n "+str(E.reshape(-1,3)[:, 0])+"\n expected: "+str(E_test)
 
 def test_two_charges():
-    solver = lp.NBody(permittivity=1.0, charge_radius=0.1,periodicityX="open",periodicityY="open",periodicityZ="open")
+    solver = lp.get_solver(("open","open","open"), "cuda", permittivity=1.0, charge_radius=0.1)
     source_pos = np.array([[0.0, 0.0, 0.0], [0.5, 0.0, 0.0]])
     target_x = np.linspace(-1.0, 1.0, 10)
     target_y = np.zeros_like(target_x)
@@ -56,7 +56,7 @@ def test_two_charges():
     assert np.allclose(phi, phi_test, atol=1e-3), "Potential does not match theoretical values get:\n "+str(phi)+"\n expected: "+str(phi_test)
 
 def test_punctual_behaviour():
-    solver = lp.NBody(permittivity=1.0, charge_radius=0.1,periodicityX="open",periodicityY="open",periodicityZ="open")
+    solver = lp.get_solver(("open","open","open"), "cuda", permittivity=1.0, charge_radius=0.1)
     source_pos = np.array([[0.0, 0.0, 0.0]])
     target_x = np.linspace(10.0, 100.0, 10)
     target_y = np.zeros_like(target_x)
@@ -69,8 +69,8 @@ def test_punctual_behaviour():
     E_test = 1/(4 * np.pi * 1.0 * target_x**2)
     assert np.allclose(E.reshape(-1,3)[:, 0], E_test, atol=1e-3), "Electric field does not match theoretical values get:\n "+str(E.reshape(-1,3)[:, 0])+"\n expected: "+str(E_test)
 
-def test_zero_eps_wa(floor_z: float=None, ceil_z: float=None, floor_permittivity: float=None, ceil_permittivity: float=None, need_complex: bool=False):
-    solver = lp.NBody(permittivity=1.0, charge_radius=0.1,periodicityX="open",periodicityY="open",periodicityZ="single_wall", floor_z=0.0, floor_permittivity=0.0)
+def test_zero_eps_wa(bottom_wall_position: float=None, top_wall_position: float=None, bottom_permittivity: float=None, top_permittivity: float=None, need_complex: bool=False):
+    solver = lp.get_solver(("open","open", "single_wall"), "cuda", permittivity=1.0, charge_radius=0.1, bottom_wall_position=0.0, bottom_permittivity=0.0)
     source_pos = np.array([[0.0, 0.0, 1.0]])
     target_z = np.linspace(0.0, 5.0, 100)
     target_x = np.zeros_like(target_z)
@@ -84,7 +84,7 @@ def test_zero_eps_wa(floor_z: float=None, ceil_z: float=None, floor_permittivity
     assert np.allclose(phi, phi_test, atol=1e-3), "Potential does not match theoretical values get:\n "+str(phi)+"\n expected: "+str(phi_test)
 
 def test_inf_eps_wall():
-    solver = lp.NBody(permittivity=1.0, charge_radius=0.1,periodicityX="open",periodicityY="open",periodicityZ="single_wall", floor_z=0.0, floor_permittivity=1000000.0)
+    solver = lp.get_solver(("open","open","single_wall"), "cuda", permittivity=1.0, charge_radius=0.1, bottom_wall_position=0.0, bottom_permittivity=1000000.0)
     source_pos = np.array([[0.0, 0.0, 1.0]])
     target_z = np.linspace(0.0, 5.0, 100)
     target_x = np.zeros_like(target_z)

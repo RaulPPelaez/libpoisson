@@ -1,8 +1,8 @@
-from .base import BaseConfig, dataclass
+from .base import BaseParameters, dataclass
 from typing import Sequence
 
 @dataclass
-class EwaldSumConfig(BaseConfig):
+class EwaldSumParameters(BaseParameters):
     """
     L: Sequence[float]
         The box size in each dimension.
@@ -22,17 +22,17 @@ class EwaldSumConfig(BaseConfig):
     tolerance: float = 1e-6
 
 @dataclass
-class EwaldSumSingleWallConfig(EwaldSumConfig):
+class EwaldSumSingleWallParameters(EwaldSumParameters):
     """
-    bottom_perm: float
+    bottom_permittivity: float
         Permittivity of the bottom wall (z<-L[2]/2). Particles are confined in the region z>-L[2]/2.
     """
-    bottom_perm: float
+    bottom_permittivity: float
 
 @dataclass
-class EwaldSumDoubleWallConfig(EwaldSumSingleWallConfig):
+class EwaldSumDoubleWallParameters(EwaldSumSingleWallParameters):
     """
-    top_perm: float
+    top_permittivity: float
         Permittivity of the top wall (z>L[2]/2). Particles are confined in the region -L[2]/2<z<L[2]/2.
     """
-    top_perm: float
+    top_permittivity: float

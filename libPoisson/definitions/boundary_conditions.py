@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-class BCtype(Enum):
+class BCType(Enum):
     OPEN = "open"
     SINGLE_WALL = "single_wall"
     DOUBLE_WALL = "double_wall"
@@ -10,6 +10,6 @@ class BCtype(Enum):
 
 @dataclass(frozen=True)
 class BoundaryConditions():
-    x: BCtype
-    y: BCtype
-    z: BCtype
+    x: BCType
+    y: BCType
+    z: BCType

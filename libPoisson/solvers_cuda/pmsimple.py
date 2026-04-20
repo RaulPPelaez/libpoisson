@@ -41,7 +41,7 @@ class PMSimple(Solver):
         This method assumes periodic boundary conditions in all three dimensions. The source charges are spread onto a grid using a Gaussian kernel,
         the potential is computed in Fourier space, and then the potential and field are interpolated back to the target positions.
         '''
-        eps = self.permittivity
+        eps = self.permittivityittivity
         eps4pi = 4 * pi * eps
         self.pot = target_pos[:,0] * 0
         self.field = target_pos * 0

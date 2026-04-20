@@ -6,8 +6,8 @@ charge_radius = 0.3
 splitting_ratio = 0.3
 tolerance = 1e-8
 permittivity = 1.0
-solver = lb.get_solver("TriplePeriodic",
-                       Lx=Lx, Ly=Ly, Lz=Lz,
+solver = lb.get_solver(("periodic","periodic","periodic"), "cuda",
+                       L = (Lx, Ly, Lz),
                        charge_radius=charge_radius, permittivity=permittivity,
                        tolerance=tolerance,
                        splitting_ratio=splitting_ratio)

@@ -1,21 +1,24 @@
 from dataclasses import dataclass as _dataclass
 
-@_dataclass
-class BaseConfig:
+@_dataclass(kw_only=True)
+class BaseParameters:
     """
     Parameters
     ----------
     charge_radius: float
         Charge radius, associated with gaussian charge distribution.
-    perm: float
+    permittivity: float
         Permittivity of the medium.
+    needs_complex: bool, optional
+        Whether the potential needs to be complex-valued. Default is False.
     """
     charge_radius: float
-    perm: float
+    permittivity: float
+    need_complex: bool = False
 
 def dataclass(*args, **kwargs):
     def wrapper(cls):
-        cls = _dataclass(cls, **kwargs)
+        cls = _dataclass(cls,**kwargs, kw_only=True)
 
         docs = []
 

@@ -34,6 +34,7 @@ class Solver(ABC):
     def __getattr__(self, name):
         return getattr(self.parameters, name)
 
+    @abstractmethod
     def solve(self,
               source_pos: ArrayLike,
               target_pos: ArrayLike,
@@ -70,8 +71,6 @@ class Solver(ABC):
         field: ArrayLike, shape (M,3)
             The computed electric field at each target point in the format (Ex1, Ey1, Ez1, Ex2, Ey2, Ez2, ..., ExM, EyM, EzM). Returned if compute_field is True.
         '''
-
-        raise NotImplementedError("The solve method must be implemented in the subclass.")
 
 
     def __call__(self,

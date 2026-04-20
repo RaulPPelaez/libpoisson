@@ -1,5 +1,5 @@
 import cupy as np
-from typing import ArrayLike
+from numpy.typing import ArrayLike
 def generate_image_charges(eps0: float,
                            eps1: float,
                            eps2: float,

@@ -9,6 +9,7 @@ temp
 *.o
 build
 *_build
+_version.py
 docs/source/generated
 *.egg-info
 .cache/

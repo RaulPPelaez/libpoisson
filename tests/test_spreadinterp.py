@@ -3,7 +3,7 @@ import cupy as np
 from scipy.special import erf
 
 def test_sanity():
-    solver = lp.PMSimple(permittivity=1.0, charge_radius=0.1,periodicityX="periodic",periodicityY="periodic",periodicityZ="periodic", gaussian_cutoff=0.1, L=[1.0, 1.0, 1.0], n_grid=[10, 10, 10])
+    solver = lp.get_solver(("periodic","periodic","periodic"), "cuda", force_implementation="spreadinterp", permittivity=1.0, charge_radius=0.1, gaussian_cutoff=0.1, L=[1.0, 1.0, 1.0], n_grid=[10, 10, 10])
     pos = np.zeros((3, 3))  # 3 particles at the origin
     print(pos.shape)
     charges = np.array([0.0, 0.0, 0.0])

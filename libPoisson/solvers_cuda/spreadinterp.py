@@ -1,11 +1,22 @@
-from ...solver import Solver
+from ..base_solver import Solver
+from ..parameters.spreadinterp import SpreadInterpParameters
+from ..registry.decorator import register_solver
+from ..definitions.boundary_conditions import BoundaryConditions, BCType
+from ..definitions.device import DeviceType
+
 import cupy as cp
 import numpy as np
 from numpy.typing import ArrayLike
 import spreadinterp
 from math import pi
 
-class PMSimple(Solver):
+
+implementation = "spreadinterp"
+device = DeviceType.CUDA
+bc = BoundaryConditions(BCType.PERIODIC, BCType.PERIODIC, BCType.PERIODIC)
+
+@register_solver(bc, device, implementation)
+class spread_interp(Solver):
     """
     A simple Particle-Mesh solver that uses Gaussian spreading to compute the potential and field at target positions due to source charges.
     This solver assumes periodic boundary conditions in all three dimensions. The source charges are spread onto a grid using a Gaussian kernel,
@@ -19,18 +30,12 @@ class PMSimple(Solver):
     n_grid : ArrayLike
         The number of grid points in each dimension (nx, ny, nz) for the Particle-Mesh method.
     """
-    def __init__(self,
-                 gaussian_cutoff: float,
-                 L : ArrayLike,
-                 n_grid: ArrayLike,
-                 *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.n_grid = n_grid
-        self.L = L
-        self.gaussian_cutoff = gaussian_cutoff
-        self.kernel = spreadinterp.create_kernel(type='gaussian', width=self.gaussian_width, cutoff=gaussian_cutoff)
+    Parameters = SpreadInterpParameters
+    def __init__(self, parameters: SpreadInterpParameters):
+        super().__init__(parameters)
+        self.kernel = spreadinterp.create_kernel(type='gaussian', width=self.gaussian_width, cutoff=self.gaussian_cutoff)
 
-    def _solve_periodic_periodic_periodic(self,
+    def solve(self,
                 source_pos: ArrayLike,
                 target_pos: ArrayLike,
                 charges: ArrayLike,
@@ -41,10 +46,10 @@ class PMSimple(Solver):
         This method assumes periodic boundary conditions in all three dimensions. The source charges are spread onto a grid using a Gaussian kernel,
         the potential is computed in Fourier space, and then the potential and field are interpolated back to the target positions.
         '''
-        eps = self.permittivityittivity
+        eps = self.permittivity
         eps4pi = 4 * pi * eps
-        self.pot = target_pos[:,0] * 0
-        self.field = target_pos * 0
+        pot = target_pos[:,0] * 0
+        field = target_pos * 0
 
         source_pos = source_pos.reshape(-1, 3)
         target_pos = target_pos.reshape(-1, 3)
@@ -66,7 +71,7 @@ class PMSimple(Solver):
         field_hat = 1j * K * potential_hat
         field_grid = cp.fft.ifftn(field_hat, axes=(0, 1, 2)).real
 
-        self.pot = spreadinterp.interpolate(target_pos, potential_grid, self.L, kernel=self.kernel)
-        self.field = spreadinterp.interpolate(target_pos, field_grid, self.L, kernel=self.kernel)
+        pot = spreadinterp.interpolate(target_pos, potential_grid, self.L, kernel=self.kernel)
+        field = spreadinterp.interpolate(target_pos, field_grid, self.L, kernel=self.kernel)
 
-        return self.pot, self.field
+        return pot, field

@@ -1,5 +1,13 @@
 import cupy as np
-def generate_image_charges(eps0, eps1, eps2, z1, z2, charges, postions, n_rebounds):
+from typing import ArrayLike
+def generate_image_charges(eps0: float,
+                           eps1: float,
+                           eps2: float,
+                           z1: float,
+                           z2: float,
+                           charges: ArrayLike,
+                           postions: ArrayLike,
+                           n_rebounds: int):
     """
     Generates all image charges up to n_rebounds for 3D positions (N,3),
     using the multiple reflection method between two planes.
@@ -62,10 +70,7 @@ def generate_image_charges(eps0, eps1, eps2, z1, z2, charges, postions, n_reboun
     assert len(postions_ext.shape) == 2 and postions_ext.shape[1] == 3, "Positions should be a (M,3) array"
     return charges_ext, postions_ext
 
-def two_walls_convergence_criterion(eps0, eps1, eps2, tol=1e-3):
-    """
-    https://chatgpt.com/c/69c2733b-5610-8332-a53a-f9560a27a8e6
-    """
+def two_walls_convergence_criterion(eps0: float, eps1: float, eps2: float, tol: float = 1e-3):
     r10 = (eps0 - eps1) / (eps0 + eps1)
     r20 = (eps0 - eps2) / (eps0 + eps2)
     r = np.sqrt(np.real(np.abs(r10*r20)))

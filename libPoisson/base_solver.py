@@ -54,7 +54,7 @@ class Solver(ABC):
             The computed potential at each target point. Returned if compute_potential is True.
 
         field: ArrayLike, shape (M,3)
-            The computed electric field at each target point in the format (Ex1, Ey1, Ez1, Ex2, Ey2, Ez2, ..., ExM, EyM, EzM). Returned if compute_field is True.
+            The computed electric field at each target point in the format [[Ex1, Ey1, Ez1], [Ex2, Ey2, Ez2], ..., [ExM, EyM, EzM]]. Returned if compute_field is True.
         '''
 
         raise NotImplementedError("The solve method must be implemented in the subclass.")

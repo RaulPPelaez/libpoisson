@@ -6,12 +6,21 @@ class SolverEntry():
     solver_cls: type
     parameters_cls: type
 
+def extend_docstring(cls):
+    if cls.__doc__ and cls.Parameters.__doc__:
+        cls.__doc__ += "\n\nAttributes:\n" + "-----------" + "\n" + cls.Parameters.__doc__
+    elif cls.Parameters.__doc__:
+        cls.__doc__ = "Attributes:\n"+"------------" + "\n" + cls.Parameters.__doc__
+    else:
+        cls.__doc__ = ""
+
 def register(cls, key, override=False):
     if key in _SOLVER_REGISTRY:
         if not override:
             raise ValueError(f"Found two solvers for {key}, use override=True to override.")
         raise Warning(f"Overriding existing solver for {key}.")
     _SOLVER_REGISTRY[key] = SolverEntry(solver_cls=cls, parameters_cls=cls.Parameters)
+
 
 def register_solver(bc, device, implementation,* ,override=False, default=False):
     """
@@ -23,6 +32,7 @@ def register_solver(bc, device, implementation,* ,override=False, default=False)
             register(cls, key, override=override)
 
         key = (bc, device, implementation)
+        extend_docstring(cls)
         register(cls, key, override=override)
 
         return cls

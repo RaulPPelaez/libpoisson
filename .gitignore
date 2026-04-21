@@ -17,3 +17,4 @@ docs/source/generated
 .vscode/
 compile_commands.json
 examples/
+docs/build/

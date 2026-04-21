@@ -16,19 +16,11 @@ device = DeviceType.CUDA
 bc = BoundaryConditions(BCType.PERIODIC, BCType.PERIODIC, BCType.PERIODIC)
 
 @register_solver(bc, device, implementation)
-class spread_interp(Solver):
+class SpreadInterp(Solver):
     """
     A simple Particle-Mesh solver that uses Gaussian spreading to compute the potential and field at target positions due to source charges.
     This solver assumes periodic boundary conditions in all three dimensions. The source charges are spread onto a grid using a Gaussian kernel,
     the potential is computed in Fourier space, and then the potential and field are interpolated back to the target positions.
-    Parameters
-    ----------
-    gaussian_cutoff : float
-        The cutoff distance for the Gaussian spreading kernel. This determines how far the influence of each charge extends when spreading onto the grid.
-    L : ArrayLike
-        The size of the simulation box in each dimension (Lx, Ly, Lz).
-    n_grid : ArrayLike
-        The number of grid points in each dimension (nx, ny, nz) for the Particle-Mesh method.
     """
     Parameters = SpreadInterpParameters
     def __init__(self, parameters: SpreadInterpParameters):
@@ -41,11 +33,6 @@ class spread_interp(Solver):
                 charges: ArrayLike,
                 compute_potential: bool = True,
                 compute_field: bool = True) -> tuple[ArrayLike, ArrayLike]:
-        '''
-        Compute the potential and field at target positions due to source charges using a simple Particle-Mesh method with Gaussian spreading.
-        This method assumes periodic boundary conditions in all three dimensions. The source charges are spread onto a grid using a Gaussian kernel,
-        the potential is computed in Fourier space, and then the potential and field are interpolated back to the target positions.
-        '''
         eps = self.permittivity
         eps4pi = 4 * pi * eps
         pot = target_pos[:,0] * 0

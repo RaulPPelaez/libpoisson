@@ -1,7 +1,7 @@
-from .base import BaseParameters, dataclass
+from .base import BaseParameters, child_dataclass
 from typing import Sequence
 
-@dataclass
+@child_dataclass
 class EwaldSumParameters(BaseParameters):
     """
     L: Sequence[float]
@@ -21,7 +21,7 @@ class EwaldSumParameters(BaseParameters):
     splitting_ratio: float = -1.0
     tolerance: float = 1e-6
 
-@dataclass
+@child_dataclass
 class EwaldSumSingleWallParameters(EwaldSumParameters):
     """
     bottom_permittivity: float
@@ -29,7 +29,7 @@ class EwaldSumSingleWallParameters(EwaldSumParameters):
     """
     bottom_permittivity: float
 
-@dataclass
+@child_dataclass
 class EwaldSumDoubleWallParameters(EwaldSumSingleWallParameters):
     """
     top_permittivity: float

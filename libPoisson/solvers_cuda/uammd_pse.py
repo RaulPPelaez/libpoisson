@@ -16,7 +16,7 @@ bc = BoundaryConditions(BCType.PERIODIC, BCType.PERIODIC, BCType.PERIODIC)
 @register_solver(bc, device, implementation, default=True)
 class UAMMDSplitEwaldPoisson(Solver):
     """
-    Solver for the Poisson Equation using Poisson Spectral Solver (PSE) implemented in UAMMD.
+    Solver for the Poisson Equation using the Split Ewald Poisson algorithm implemented in UAMMD.
     This solver is designed for systems with periodic boundary conditions in all three dimensions.
     """
     Parameters = EwaldSumParameters

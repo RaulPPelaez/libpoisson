@@ -83,8 +83,7 @@ def extract_user_params(cls):
 
 def make_solver_link(cls):
     full = f"{cls.__module__}.{cls.__name__}"
-    name = cls.__name__
-    return f":class:`{name} <{full}>`"
+    return f":ref:`{full}`"
 
 def build_solver_tables():
     default_rows = []

@@ -18,7 +18,7 @@ Default Solvers
      - .. code-block:: python
 
 		"cuda"
-     - :class:`NBody <libPoisson.solvers_cuda.nbody.NBody>`
+     - :ref:`libPoisson.solvers_cuda.nbody.NBody`
      - 
    * - .. code-block:: python
 
@@ -30,7 +30,7 @@ Default Solvers
      - .. code-block:: python
 
 		"cuda"
-     - :class:`NBodySingleWall <libPoisson.solvers_cuda.nbody.NBodySingleWall>`
+     - :ref:`libPoisson.solvers_cuda.nbody.NBodySingleWall`
      - .. code-block:: python
 
 		bottom_wall_position: float,
@@ -45,7 +45,7 @@ Default Solvers
      - .. code-block:: python
 
 		"cuda"
-     - :class:`NBodyDoubleWall <libPoisson.solvers_cuda.nbody.NBodyDoubleWall>`
+     - :ref:`libPoisson.solvers_cuda.nbody.NBodyDoubleWall`
      - .. code-block:: python
 
 		bottom_wall_position: float,
@@ -63,7 +63,7 @@ Default Solvers
      - .. code-block:: python
 
 		"cuda"
-     - :class:`UAMMDPoissonSlabOpen <libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabOpen>`
+     - :ref:`libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabOpen`
      - .. code-block:: python
 
 		L: Sequence,
@@ -79,7 +79,7 @@ Default Solvers
      - .. code-block:: python
 
 		"cuda"
-     - :class:`UAMMDPoissonSlabSingleWall <libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabSingleWall>`
+     - :ref:`libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabSingleWall`
      - .. code-block:: python
 
 		L: Sequence,
@@ -96,7 +96,7 @@ Default Solvers
      - .. code-block:: python
 
 		"cuda"
-     - :class:`UAMMDPoissonSlabDoubleWall <libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabDoubleWall>`
+     - :ref:`libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabDoubleWall`
      - .. code-block:: python
 
 		L: Sequence,
@@ -114,7 +114,7 @@ Default Solvers
      - .. code-block:: python
 
 		"cuda"
-     - :class:`UAMMDSplitEwaldPoisson <libPoisson.solvers_cuda.uammd_pse.UAMMDSplitEwaldPoisson>`
+     - :ref:`libPoisson.solvers_cuda.uammd_pse.UAMMDSplitEwaldPoisson`
      - .. code-block:: python
 
 		L: Sequence,
@@ -145,7 +145,7 @@ All Solvers
      - .. code-block:: python
 
 		"numba"
-     - :class:`NBody <libPoisson.solvers_cuda.nbody.NBody>`
+     - :ref:`libPoisson.solvers_cuda.nbody.NBody`
      - 
    * - .. code-block:: python
 
@@ -160,7 +160,7 @@ All Solvers
      - .. code-block:: python
 
 		"numba"
-     - :class:`NBodySingleWall <libPoisson.solvers_cuda.nbody.NBodySingleWall>`
+     - :ref:`libPoisson.solvers_cuda.nbody.NBodySingleWall`
      - .. code-block:: python
 
 		bottom_wall_position: float,
@@ -178,7 +178,7 @@ All Solvers
      - .. code-block:: python
 
 		"numba"
-     - :class:`NBodyDoubleWall <libPoisson.solvers_cuda.nbody.NBodyDoubleWall>`
+     - :ref:`libPoisson.solvers_cuda.nbody.NBodyDoubleWall`
      - .. code-block:: python
 
 		bottom_wall_position: float,
@@ -199,7 +199,7 @@ All Solvers
      - .. code-block:: python
 
 		"uammd"
-     - :class:`UAMMDPoissonSlabOpen <libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabOpen>`
+     - :ref:`libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabOpen`
      - .. code-block:: python
 
 		L: Sequence,
@@ -218,7 +218,7 @@ All Solvers
      - .. code-block:: python
 
 		"uammd"
-     - :class:`UAMMDPoissonSlabSingleWall <libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabSingleWall>`
+     - :ref:`libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabSingleWall`
      - .. code-block:: python
 
 		L: Sequence,
@@ -238,7 +238,7 @@ All Solvers
      - .. code-block:: python
 
 		"uammd"
-     - :class:`UAMMDPoissonSlabDoubleWall <libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabDoubleWall>`
+     - :ref:`libPoisson.solvers_cuda.uammd_dpslab.UAMMDPoissonSlabDoubleWall`
      - .. code-block:: python
 
 		L: Sequence,
@@ -259,7 +259,7 @@ All Solvers
      - .. code-block:: python
 
 		"uammd"
-     - :class:`UAMMDSplitEwaldPoisson <libPoisson.solvers_cuda.uammd_pse.UAMMDSplitEwaldPoisson>`
+     - :ref:`libPoisson.solvers_cuda.uammd_pse.UAMMDSplitEwaldPoisson`
      - .. code-block:: python
 
 		L: Sequence,
@@ -278,7 +278,7 @@ All Solvers
      - .. code-block:: python
 
 		"spreadinterp"
-     - :class:`SpreadInterp <libPoisson.solvers_cuda.spreadinterp.SpreadInterp>`
+     - :ref:`libPoisson.solvers_cuda.spreadinterp.SpreadInterp`
      - .. code-block:: python
 
 		gaussian_cutoff: float,

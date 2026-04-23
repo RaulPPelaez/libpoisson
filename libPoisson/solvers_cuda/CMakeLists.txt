@@ -1,3 +1,16 @@
+
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    if(DEFINED ENV{CMAKE_CUDA_ARCHITECTURES})
+        message(STATUS "Using CMAKE_CUDA_ARCHITECTURES from environment variable: $ENV{CMAKE_CUDA_ARCHITECTURES}")
+        set(CMAKE_CUDA_ARCHITECTURES $ENV{CMAKE_CUDA_ARCHITECTURES})
+    else()
+        message(STATUS "CMAKE_CUDA_ARCHITECTURES not set, defaulting to 'all-major'")
+        set(CMAKE_CUDA_ARCHITECTURES "all-major")
+    endif()
+else()
+    message(STATUS "Using CMAKE_CUDA_ARCHITECTURES from CMake variable: ${CMAKE_CUDA_ARCHITECTURES}")
+endif()
+
 enable_language(CUDA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/" "$ENV{CONDA_PREFIX}/share/cmake/Modules")
@@ -15,9 +28,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CUDA_STANDARD 20)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_SEPARABLE_COMPILATION OFF)
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES "all-major")
-endif()
+
 IF (CMAKE_BUILD_TYPE MATCHES "Debug")
   if(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA")
     set(CMAKE_CUDA_FLAGS "-g -G -src-in-ptx -fPIC")
@@ -63,4 +74,4 @@ nanobind_add_module(
 uammd_setup_target(_uammd)
 target_link_libraries(_uammd PRIVATE cblas)
 
-install(TARGETS _uammd LIBRARY DESTINATION ./solvers_cuda/)
+install(TARGETS _uammd LIBRARY DESTINATION solvers_cuda)

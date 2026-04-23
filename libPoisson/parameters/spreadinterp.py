@@ -1,7 +1,7 @@
-from .base import BaseParameters, dataclass
+from .base import BaseParameters, child_dataclass
 from typing import Sequence
 
-@dataclass
+@child_dataclass
 class SpreadInterpParameters(BaseParameters):
     """
     L: Sequence[float]

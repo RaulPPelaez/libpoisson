@@ -75,8 +75,17 @@ class NBody(Solver):
 bc = BoundaryConditions(BCType.OPEN, BCType.OPEN, BCType.SINGLE_WALL)
 @register_solver(bc, device, implementation, default=True)
 class NBodySingleWall(Solver):
-    """
-    """
+    r'''
+    Compute the potential and field at target positions due to source charges using the free charge green's function with a single wall boundary condition.
+    The potential and field are computed using the method of images, where an image charge is placed at the mirrored position of the source charge with respect to the wall,
+    and its magnitude is scaled by the reflection coefficient determined by the permittivity of the wall and the medium.
+    The formulas for the potential and field are the same as in the open-open-open case, but with the addition of the contributions from the image charges.
+
+    The image charge for a source charge q at position (x, y, z) is given by:
+    $ q' = q \frac{-\epsilon_{wall} + \epsilon}{\epsilon_{wall} + \epsilon} $
+    and is located at:
+    $ (x', y', z') = (x, y, 2z_{wall} - z) $
+    '''
     Parameters = NBodySingleWallParameters
     def solve(self,
               source_pos: ArrayLike,
@@ -84,18 +93,6 @@ class NBodySingleWall(Solver):
               charges: ArrayLike,
               compute_potential: bool = True,
               compute_field: bool = True) -> tuple[ArrayLike, ArrayLike]:
-        r'''
-        Compute the potential and field at target positions due to source charges using the free charge green's function with a single wall boundary condition.
-        The potential and field are computed using the method of images, where an image charge is placed at the mirrored position of the source charge with respect to the wall,
-        and its magnitude is scaled by the reflection coefficient determined by the permittivity of the wall and the medium.
-        The formulas for the potential and field are the same as in the open-open-open case, but with the addition of the contributions from the image charges.
-
-        The image charge for a source charge q at position (x, y, z) is given by:
-        $ q' = q \frac{-\epsilon_{wall} + \epsilon}{\epsilon_{wall} + \epsilon} $
-        and is located at:
-        $ (x', y', z') = (x, y, 2z_{wall} - z) $
-        '''
-
         eps = self.permittivity
         eps_wall = self.bottom_permittivity
         bottom_wall_position = self.bottom_wall_position

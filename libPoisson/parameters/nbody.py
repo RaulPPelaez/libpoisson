@@ -1,10 +1,12 @@
-from .base import BaseParameters, dataclass
+from .base import BaseParameters, child_dataclass
 
-@dataclass
+@child_dataclass
 class NBodyParameters(BaseParameters):
+    """
+    """
     pass
 
-@dataclass
+@child_dataclass
 class NBodySingleWallParameters(NBodyParameters):
     """
     bottom_wall_position: float
@@ -15,7 +17,7 @@ class NBodySingleWallParameters(NBodyParameters):
     bottom_wall_position: float
     bottom_permittivity: float
 
-@dataclass
+@child_dataclass
 class NBodyDoubleWallParameters(NBodySingleWallParameters):
     """
     top_wall_position: float

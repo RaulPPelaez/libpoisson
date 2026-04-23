@@ -4,7 +4,7 @@ from typing import Tuple
 from ..base_solver import Solver
 from ..registry.selector import select_solver
 
-def get_solver(boundary_conditions: BoundaryCondtions | Tuple[str, str, str],
+def get_solver(boundary_conditions: BoundaryConditions | Tuple[str, str, str],
                device: (DeviceType | str) = DeviceType.CUDA,
                *, force_implementation: (str | None) = None,
                **kwargs) -> Solver:

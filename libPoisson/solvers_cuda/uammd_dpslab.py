@@ -22,10 +22,6 @@ def create_uammd_solver(solver):
 
 
 class UAMMDPoissonSlab(Solver):
-    """
-    Solver for the Poisson Equation using Poisson Spectral Solver (PSE) implemented in UAMMD.
-    This solver is designed for systems with periodic boundary conditions in all three dimensions.
-    """
     def __init__(self,
                  parameters: EwaldSumParameters):
         super().__init__(parameters)

@@ -12,7 +12,7 @@ dependencies:
   - scipy
 
   # CUDA stack
-  - cuda-version<12.9
+  - cuda-version<=12.9
   - cuda-libraries-dev
   - cuda-compiler
   - cmake >= 3.24
@@ -23,10 +23,10 @@ dependencies:
   - libblas
   - liblapacke
   - nanobind
+  - stochasticHydroTools::spreadinterp
   - pip:
     - sphinx==8.1.3
     - sphinx-rtd-theme==3.0.2
     - sphinxcontrib-autoprogram==0.1.9
     - sphinxcontrib-napoleon==0.7
     - gitpython
-    - git+https://github.com/RaulPPelaez/spreadinterp

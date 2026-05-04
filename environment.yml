@@ -12,7 +12,7 @@ dependencies:
   - scipy
 
   # CUDA stack
-  - cuda-version<=12.9
+  - cuda-version
   - cuda-libraries-dev
   - cuda-compiler
   - cmake >= 3.24

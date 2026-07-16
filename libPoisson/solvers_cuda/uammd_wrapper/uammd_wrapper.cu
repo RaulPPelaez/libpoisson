@@ -40,7 +40,7 @@ class DPSlabWrapper{
     real gw;
     real tolerance;
     real split;
-    real totalCharge;
+    double totalCharge;
     public:
     DPSlabWrapper(real Lx, real Ly, real Lz, real permInside, real permTop, real permBottom, real gw, real tolerance = 1e-3, real split = -1.0)
         : Lx(Lx), Ly(Ly), Lz(Lz), permInside(permInside), permTop(permTop), permBottom(permBottom), gw(gw), tolerance(tolerance), split(split) {}
@@ -139,7 +139,16 @@ void DPSlabWrapper::compute_poisson(real *i_pos, real *i_charge, real *i_field, 
         int numberParticles) {
     if (!pd || numberParticles != pd->getNumParticles()) { //Only first time compute_poisson is called, we create the ParticleData and the solver. This is because the solver needs to know the number of particles to create the necessary data structures, and we don't want to recreate these data structures every time compute_poisson is called, as that would be very inefficient.
         pd = std::make_shared<ParticleData>(numberParticles);
-        totalCharge = thrust::reduce(thrust::cuda::par, i_charge, i_charge + numberParticles, 0.0f, thrust::plus<real>());
+        totalCharge = thrust::transform_reduce(
+                thrust::cuda::par,
+                i_charge,
+                i_charge + numberParticles,
+                [] __device__ (float x) -> double {
+                    return static_cast<double>(x);
+                    },
+                0.0,
+                thrust::plus<double>()
+                );
         {
             auto charge = pd->getCharge(access::gpu, access::write);
             thrust::copy(thrust::cuda::par, i_charge, i_charge + numberParticles,
@@ -153,9 +162,18 @@ void DPSlabWrapper::compute_poisson(real *i_pos, real *i_charge, real *i_field, 
         const real3 *i_pos3 = reinterpret_cast<real3 *>(i_pos);
         thrust::transform(thrust::cuda::par, i_pos3, i_pos3 + numberParticles,
                 pos.begin(), ToReal4());
-        real totalCharge_given = thrust::reduce(thrust::cuda::par, i_charge, i_charge + numberParticles, 0.0f, thrust::plus<real>());
-        real charge_diff = abs(totalCharge_given - totalCharge);
-        if (charge_diff > tolerance) {
+        double totalCharge_given = thrust::transform_reduce(
+                thrust::cuda::par,
+                i_charge,
+                i_charge + numberParticles,
+                [] __device__ (float x) -> double {
+                    return static_cast<double>(x);
+                    },
+                0.0,
+                thrust::plus<double>()
+                );
+        double charge_diff = abs(totalCharge_given - totalCharge);
+        if (charge_diff > static_cast<double>(tolerance)) {
             std::string msg = "Total charge has changed since initialization by " + std::to_string(charge_diff) + ".\n"
                     "Initial charge: " + std::to_string(totalCharge) + ", new charge: " + std::to_string(totalCharge_given) + ".\n"
                     "Double Periodic systems requires a constant total charge due to performance optimizations. \n"

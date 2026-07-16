@@ -17,3 +17,27 @@ def test_totalchargefailure():
     except ValueError as e:
         error = e
     assert error is not None, "Changed total charge but no error was raised"
+
+
+def test_conservationcharge():
+    solver = lp.get_solver(("periodic", "periodic", "open"), "cuda",
+                           L = (20.0, 20.0, 20.0), permittivity=1.0, tolerance=1e-6, splitting_ratio=5.0, charge_radius=0.2)
+
+    N = 5000
+    target_pos = cp.zeros((N, 3))
+    source_charge = cp.zeros(N)
+    source_charge[N//2:] = cp.random.uniform(0.0, 1.0, N//2)
+    source_charge[:N//2] = -1.0 * source_charge[N//2:]
+    _, _ = solver(target_pos, target_pos, source_charge)
+    source_charge[N//2:] = cp.random.uniform(0.0, 1.0, N//2)
+    source_charge[:N//2] = -1.0 * source_charge[N//2:]
+    error = None
+    for i in range(10):
+        source_charge[N//2:] = cp.random.uniform(0.0, 1.0, N//2)
+        source_charge[:N//2] = -1.0 * source_charge[N//2:]
+        try:
+            _,_ = solver(target_pos, target_pos, source_charge)
+        except ValueError as e:
+            error = e
+
+    assert error is None, "Total charge is 0 but error was raised"

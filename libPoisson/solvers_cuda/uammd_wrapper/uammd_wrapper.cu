@@ -156,11 +156,11 @@ void DPSlabWrapper::compute_poisson(real *i_pos, real *i_charge, real *i_field, 
         real totalCharge_given = thrust::reduce(thrust::cuda::par, i_charge, i_charge + numberParticles, 0.0f, thrust::plus<real>());
         real charge_diff = abs(totalCharge_given - totalCharge);
         if (charge_diff > tolerance) {
-            throw nb::value_error(
-                    "Total charge has changed since initialization by " + std::to_string(charge_diff) + ".\n"
+            std::string msg = "Total charge has changed since initialization by " + std::to_string(charge_diff) + ".\n"
+                    "Initial charge: " + std::to_string(totalCharge) + ", new charge: " + std::to_string(totalCharge_given) + ".\n"
                     "Double Periodic systems requires a constant total charge due to performance optimizations. \n"
-                    "If you need to change the total charge, you will need to create a new instance of the solver."
-                    );
+                    "If you need to change the total charge, you will need to create a new instance of the solver.";
+            throw nb::value_error(msg.c_str());
         }
         auto charge = pd->getCharge(access::gpu, access::write);
         thrust::copy(thrust::cuda::par, i_charge, i_charge + numberParticles,
